@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c6c4d3" /><stop offset=".22" stop-color="#363640" /><stop offset=".53" stop-color="#15151c" /><stop offset=".76" stop-color="#77727e" /><stop offset="1" stop-color="#22212c" /></linearGradient>
+<linearGradient id="violet"><stop stop-color="#51426d" /><stop offset=".5" stop-color="#d1c1ec" /><stop offset="1" stop-color="#745491" /></linearGradient>
+<linearGradient id="gem" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#e8d9ff" /><stop offset=".25" stop-color="#ae88dd" /><stop offset=".6" stop-color="#65408e" /><stop offset="1" stop-color="#281a42" /></linearGradient>
+<mask id="aperture"><rect width="256" height="256" fill="white" /><circle cx="128" cy="128" r="98" fill="black" /></mask>
+</defs><g mask="url(#aperture)" fill="none">
+<circle cx="128" cy="128" r="108" stroke="#242430" stroke-width="2" />
+<ellipse cx="128" cy="128" rx="118" ry="104" transform="rotate(-28 128 128)" stroke="#45424f" stroke-width="1.2" />
+<path d="M17 161 A118 104 -28 0 0 215 62" stroke="url(#violet)" stroke-width="2" />
+<g transform="rotate(-28 128 128)">
+<circle cx="246" cy="128" r="4" fill="#cab5e1" stroke="#6a517d" stroke-width="2" />
+<circle cx="10" cy="128" r="2.5" fill="#777484" />
+<circle cx="128" cy="24" r="2" fill="#aaa4bb" />
+</g></g></svg>

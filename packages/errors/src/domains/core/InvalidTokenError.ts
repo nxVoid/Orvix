@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
-import {FluxerError} from '@fluxer/errors/src/FluxerError';
+import {APIErrorCodes} from '@relay/constants/src/ApiErrorCodes';
+import {RelayError} from '@relay/errors/src/RelayError';
 
-export class InvalidTokenError extends FluxerError {
+export class InvalidTokenError extends RelayError {
 	constructor() {
 		super({code: APIErrorCodes.INVALID_TOKEN, status: 401});
 	}

@@ -1,0 +1,211 @@
+/**
+ * @module commands/radio
+ * @description Play internet radio stations with interactive station selection via reactions.
+ */
+
+import { CommandBuilder } from "../src/commands/index.mjs";
+import { EmbedBuilder } from "@fluxerjs/core";
+import { logger } from "../src/core/Logger.mjs";
+import { NUMBER_EMOJIS, CANCEL_EMOJI, PREV_EMOJI, NEXT_EMOJI } from "../src/utils/UI.mjs";
+
+
+/**
+ * @type {CommandBuilder}
+ * @description Command definition for the radio command. Returns null if no stations configured.
+ */
+export const command = function() {
+  if (!this.config.radio?.length) return null;
+  return new CommandBuilder()
+      .setName("radio")
+      .setDescription("Play a radio station. Use `${prefix}radio list` to browse all stations.", "commands.radio")
+      .addAliases("r")
+      .setCategory("music")
+      .addTextOption(o =>
+          o.setName("station")
+              .setDescription("Station name, 'list' to browse, or leave blank for default.")
+              .setRequired(false)
+      );
+};
+
+/**
+ * Run handler for the radio command.
+ * Lists stations, plays a named station, or starts the default station.
+ *
+ * @param {object} msg - The command message wrapper.
+ * @param {object} data - Parsed command data containing the station option.
+ * @returns {Promise<void>}
+ */
+export async function run(msg, data) {
+  const radios = this.config.radio;
+  if (!radios?.length) {
+    const embed = new EmbedBuilder()
+      .setColor(0xe9196c)
+      .setAuthor({ name: this.t(msg, "responses.radio.stationsAuthor") || "24/7 Radio Station Directory" })
+      .setDescription(this.t(msg, "responses.radio.noStations"));
+    return msg.reply({ embeds: [embed] });
+  }
+
+  const input = (data.get("station")?.value ?? "").trim().toLowerCase();
+
+  if (input === "list") {
+    let page = 0;
+    const perPage = NUMBER_EMOJIS.length;
+    const totalPages = Math.ceil(radios.length / perPage);
+
+    const buildPage = () => {
+      const start    = page * perPage;
+      const pickable = radios.slice(start, start + perPage);
+      const prefix   = this.handler.getPrefix(msg.message?.guildId ?? msg.channel?.guildId) || "%";
+
+      let desc = "";
+      pickable.forEach((r, i) => {
+        const displayName = r.detailedName ?? r.name ?? "Station";
+        const stationDesc = String(r.description ?? "").replaceAll("\n", "\n   ");
+        desc += `${NUMBER_EMOJIS[i]} **${displayName}** (\`${prefix}radio ${r.name ?? "station"}\`)\n`;
+        if (stationDesc) desc += `   ${stationDesc}\n\n`;
+        else desc += "\n";
+      });
+
+      const authorName = this.t(msg, "responses.radio.stationsAuthor") || "24/7 Radio Station Directory";
+      const titleName  = this.t(msg, "responses.radio.stationsTitle", { page: page + 1, total: totalPages });
+      const footerText = this.t(msg, "responses.radio.prevNext");
+
+      const embed = new EmbedBuilder()
+        .setColor(0xe9196c)
+        .setAuthor({ name: authorName })
+        .setTitle(titleName)
+        .setDescription(desc.trim())
+        .setFooter({ text: footerText });
+
+      return { payload: { embeds: [embed] }, pickable };
+    };
+
+    let { payload, pickable } = buildPage();
+    const listMsg = await msg.reply(payload);
+    if (!listMsg) return;
+
+    const baseEmojis = [...NUMBER_EMOJIS, PREV_EMOJI, NEXT_EMOJI, CANCEL_EMOJI];
+    for (const e of baseEmojis) await listMsg.message.react(e).catch(() => {});
+
+    let settled = false;
+
+    const clearReactions = async () => {
+      const rawMsg = listMsg.message;
+      try {
+        await rawMsg.removeAllReactions();
+      } catch (_) {
+        for (const emoji of baseEmojis) {
+          try { await rawMsg.removeReaction(emoji); } catch(e) { logger.warn("[Radio] Error:", e?.message); }
+        }
+      }
+    };
+
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      unobserve();
+      clearReactions().catch(() => {});
+      const timedOutEmbed = new EmbedBuilder()
+        .setColor(0xe9196c)
+        .setAuthor({ name: this.t(msg, "responses.radio.stationsAuthor") || "24/7 Radio Station Directory" })
+        .setDescription(this.t(msg, "responses.radio.timedOut"));
+      listMsg.edit({ embeds: [timedOutEmbed] }).catch(() => {});
+    }, 60_000);
+
+    const normalize = (s) => s.replace(/\uFE0F/g, "");
+
+    const unobserve = listMsg.onReaction(baseEmojis, async (e) => {
+      if (settled) return;
+      const emoji = normalize(e.emoji_id);
+
+      if (emoji === normalize(CANCEL_EMOJI)) {
+        settled = true;
+        clearTimeout(timeout);
+        unobserve();
+        await clearReactions();
+        const cancelEmbed = new EmbedBuilder()
+          .setColor(0xe9196c)
+          .setAuthor({ name: this.t(msg, "responses.radio.stationsAuthor") || "24/7 Radio Station Directory" })
+          .setDescription(this.t(msg, "responses.radio.cancelled"));
+        listMsg.edit({ embeds: [cancelEmbed] }).catch(() => {});
+        return;
+      }
+      if (emoji === normalize(NEXT_EMOJI)) page = (page + 1) % totalPages;
+      else if (emoji === normalize(PREV_EMOJI)) page = (page - 1 + totalPages) % totalPages;
+      else {
+        const idx = NUMBER_EMOJIS.findIndex(x => normalize(x) === emoji);
+        if (idx !== -1 && idx < pickable.length) {
+          settled = true;
+          clearTimeout(timeout);
+          unobserve();
+          await clearReactions();
+          const selected = radios[page * perPage + idx];
+          return playStation(this, msg, selected, listMsg);
+        }
+      }
+
+      const next = buildPage();
+      pickable = next.pickable;
+      await listMsg.edit(next.payload).catch(() => {});
+    }, msg.author);
+
+    return;
+  }
+
+  if (input) {
+    const radio = radios.find(r => String(r.name ?? "").toLowerCase() === input);
+    if (!radio) {
+      const names = radios.map(r => `\`${r.name ?? "station"}\``).join(", ");
+      const embed = new EmbedBuilder()
+        .setColor(0xe9196c)
+        .setAuthor({ name: this.t(msg, "responses.radio.stationsAuthor") || "24/7 Radio Station Directory" })
+        .setDescription(this.t(msg, "responses.radio.unknownStation", { station: input, stations: names }));
+      return msg.reply({ embeds: [embed] });
+    }
+    return playStation(this, msg, radio);
+  }
+
+  return playStation(this, msg, radios[0]);
+}
+
+/**
+ * Play a radio station on the player, switching if one is already playing.
+ * @private
+ * @async
+ * @param {object} ctx - The bot (Remix) instance context.
+ * @param {object} msg - The command message wrapper.
+ * @param {object} radio - The radio station config object.
+ * @param {object|null} [editTarget=null] - Optional message to edit instead of sending a new reply.
+ * @returns {Promise<void>}
+ */
+async function playStation(ctx, msg, radio, editTarget = null) {
+  const p = await ctx.getPlayer(msg, true, true, true);
+  if (!p) return;
+
+  const current = p.queue.getCurrent();
+  const hasRadioQueued = p.queue.data.some(t => t.type === "radio");
+  if (current?.type === "radio" || hasRadioQueued) await p.switchRadio(radio);
+  else p.playRadio(radio);
+
+  const prefix = ctx.handler.getPrefix(msg?.channel?.channel?.guildId ?? msg?.message?.guildId);
+  const stationName = radio.detailedName ?? radio.name ?? "Radio Station";
+  const stationUrl  = radio.author?.url ?? "";
+  const stationDesc = String(radio.description ?? "");
+  const stationLine = stationUrl
+      ? `**[${stationName}](${stationUrl})**\n\n`
+      : `**${stationName}**\n\n`;
+  const skipHint = ctx.t(msg, "responses.radio.skipHint", { prefix }) || `_Use \`${prefix}skip\` to stop the radio, or \`${prefix}radio list\` to switch stations._`;
+  const embed = new EmbedBuilder()
+    .setColor(0xe9196c)
+    .setAuthor({ name: ctx.t(msg, "responses.radio.liveRadioAuthor") })
+    .setTitle(`📻 ${stationName}`)
+    .setDescription(
+      stationLine +
+      `${stationDesc}\n\n` +
+      skipHint
+    )
+    .setFooter({ text: ctx.t(msg, "responses.radio.webRadioFooter", { prefix }) });
+
+  if (editTarget) editTarget.edit({ embeds: [embed] }).catch(() => {});
+  else msg.reply({ embeds: [embed] }).catch(() => {});
+}

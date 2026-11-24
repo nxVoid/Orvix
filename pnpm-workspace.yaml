@@ -2,15 +2,15 @@
 
 packages:
   - packages/*
-  - fluxer_api
-  - fluxer_app
-  - fluxer_api/pkgs/*
-  - fluxer_app/pkgs/*
-  - '!fluxer_app/pkgs/libfluxcore'
-  - '!fluxer_app/pkgs/libfluxwebp'
-  - fluxer_desktop
-  - fluxer_admin
-  - fluxer_docs
+  - relay_api
+  - relay_app
+  - relay_api/pkgs/*
+  - relay_app/pkgs/*
+  - '!relay_app/pkgs/libfluxcore'
+  - '!relay_app/pkgs/libfluxwebp'
+  - relay_desktop
+  - relay_admin
+  - relay_docs
 
 allowBuilds:
   '@bufbuild/buf': true

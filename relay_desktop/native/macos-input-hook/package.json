@@ -1,0 +1,26 @@
+{
+	"name": "@relay/macos-input-hook",
+	"version": "0.0.0",
+	"description": "",
+	"private": true,
+	"license": "AGPL-3.0-or-later",
+	"os": [
+		"darwin"
+	],
+	"cpu": [
+		"x64",
+		"arm64"
+	],
+	"main": "index.js",
+	"types": "index.d.ts",
+	"files": [
+		"index.js",
+		"index.d.ts",
+		"loader-diagnostics.cjs",
+		"macos-input-hook.darwin-x64.node",
+		"macos-input-hook.darwin-arm64.node"
+	],
+	"scripts": {
+		"build": "node ../../../tools/ci/run.mjs build-desktop-native-addon"
+	}
+}

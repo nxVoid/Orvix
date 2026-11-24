@@ -4,9 +4,9 @@ import {
 	type CanonicalNetworkEndpointRule,
 	HTTP_NETWORK_PROTOCOLS,
 	normalizeCanonicalNetworkEndpoint,
-} from '@fluxer/instance_bootstrap/src/NetworkOrigin';
+} from '@relay/instance_bootstrap/src/NetworkOrigin';
 
-export const OFFICIAL_INSTANCE_NAME = 'Fluxer';
+export const OFFICIAL_INSTANCE_NAME = 'Relay';
 
 export const OFFICIAL_INSTANCE_DISPLAY_HOST = 'fluxer.com';
 

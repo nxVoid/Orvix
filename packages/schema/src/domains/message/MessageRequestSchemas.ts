@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {MessageFlags, MessageFlagsDescriptions} from '@fluxer/constants/src/ChannelConstants';
-import {MAX_MESSAGE_LENGTH_NON_PREMIUM, MAX_MESSAGE_LENGTH_PREMIUM} from '@fluxer/constants/src/LimitConstants';
+import {MessageFlags, MessageFlagsDescriptions} from '@relay/constants/src/ChannelConstants';
+import {MAX_MESSAGE_LENGTH_NON_PREMIUM, MAX_MESSAGE_LENGTH_PREMIUM} from '@relay/constants/src/LimitConstants';
 import {
 	ClientAttachmentReferenceRequest,
 	ClientAttachmentRequest,
 	ClientUploadedAttachmentRequest,
-} from '@fluxer/schema/src/domains/message/AttachmentSchemas';
-import {AllowedMentionsRequest, MessageReferenceRequest} from '@fluxer/schema/src/domains/message/SharedMessageSchemas';
-import {createQueryIntegerType, DateTimeType} from '@fluxer/schema/src/primitives/QueryValidators';
+} from '@relay/schema/src/domains/message/AttachmentSchemas';
+import {AllowedMentionsRequest, MessageReferenceRequest} from '@relay/schema/src/domains/message/SharedMessageSchemas';
+import {createQueryIntegerType, DateTimeType} from '@relay/schema/src/primitives/QueryValidators';
 import {
 	ColorType,
 	createBitflagInt32Type,
@@ -18,9 +18,9 @@ import {
 	Int32Type,
 	SnowflakeType,
 	withOpenApiType,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {AttachmentURLType, URLType} from '@fluxer/schema/src/primitives/UrlValidators';
-import {schemaMetadata} from '@fluxer/schema/src/SchemaMetadata';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {AttachmentURLType, URLType} from '@relay/schema/src/primitives/UrlValidators';
+import {schemaMetadata} from '@relay/schema/src/SchemaMetadata';
 import {z} from 'zod';
 
 const RICH_EMBED_AUTHOR_NAME_MAX_LENGTH = 256 as const;

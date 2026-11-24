@@ -1,0 +1,102 @@
+name: relay-bot
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: relay-music-bot
+    restart: unless-stopped
+    command: node index.mjs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nodelink:
+        condition: service_healthy
+    volumes:
+      - ./config.json:/app/config.json
+      - ./storage:/app/storage
+    environment:
+      - TZ=${TZ:-UTC}
+      - INSTANCE_URL=http://workspace:8088
+      - VOICE_HOST=livekit
+      - VOICE_PORT=7880
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${WEB_PORT:-8089}:80"
+    healthcheck:
+      test: ["CMD", "node", "-e", "const fs = require('fs'); try { const diff = Date.now() - fs.statSync('/tmp/.remix-health').mtimeMs; process.exit(diff < 30000 ? 0 : 1); } catch { process.exit(1); }"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    networks:
+      - relay-music-net
+      - orvix-dev_default
+
+  mysql:
+    image: mysql:8.4
+    container_name: relay-music-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-remix_root_pw}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-remix}
+      MYSQL_USER: ${MYSQL_USER:-remix}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-remix_pw}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-remix_root_pw}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - relay-music-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: relay-music-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - relay-music-net
+
+  nodelink:
+    image: performanc/nodelink:latest
+    container_name: relay-music-nodelink
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-UTC}
+      - NODELINK_API_ENABLETRACKSTREAMENDPOINT=true
+      - NODELINK_API_ENABLELOADSTREAMENDPOINT=true
+    volumes:
+      - nodelink_data:/app/.cache
+      - ./docker/nodelink.config.ts:/app/config.ts:ro
+    ports:
+      - "${NODELINK_PORT:-3005}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('net').connect(3000,'127.0.0.1').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - relay-music-net
+
+volumes:
+  mysql_data:
+  nodelink_data:
+
+networks:
+  relay-music-net:
+    driver: bridge
+  orvix-dev_default:
+    external: true

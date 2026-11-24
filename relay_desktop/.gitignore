@@ -1,0 +1,11 @@
+/.velopack/
+/dist-electron/
+
+/native/**/*.node
+/native/webauthn/*.so*
+/native/win-game-capture/orvix-game-hook.*.dll
+/native/win-game-capture/orvix-inject-helper.*.exe
+/native/win-game-capture/orvix-vulkan-layer.*.dll
+/native/win-game-capture/orvix-vulkan-layer.*.json
+
+/src/common/BuildChannel.ts

@@ -1,0 +1,293 @@
+/**
+ * @module commands/lastfm/account
+ * @description Account linking, profile and playlist actions for the lastfm command (link, confirm, unlink, scrobble, np, profile, playlists). Extracted verbatim from the original single-file command; dispatched by commands/lastfm.mjs.
+ */
+
+
+import { EmbedBuilder } from "@fluxerjs/core";
+import { getGlobalColor } from "../../src/ui/index.mjs";
+import { Utils } from "../../src/utils/Utils.mjs";
+import { logger } from "../../src/core/Logger.mjs";
+import { ERROR_COLOR } from "../../src/utils/UI.mjs";
+import { notLinked } from "./shared.mjs";
+
+/**
+ * Action names dispatched to this module.
+ * @type {Set<string>}
+ */
+export const ACCOUNT_ACTIONS = new Set([
+  "link",
+  "confirm",
+  "unlink",
+  "scrobble",
+  "np",
+  "profile",
+  "playlists"
+]);
+
+
+/**
+ * @async
+ * @param {object} msg - The command message wrapper.
+ * @param {object} data - Parsed command data.
+ * @param {object} lastfm - The Last.fm manager instance.
+ * @param {string} prefix - The guild command prefix.
+ * @param {string} userId - The invoking user's ID.
+ * @param {string|null} targetUserId - The targeted user's ID, if any.
+ * @param {string} action - The resolved action name.
+ * @returns {Promise<*>} Whatever the original switch returned for this action.
+ */
+export async function runAccountActions(msg, data, lastfm, prefix, userId, targetUserId, action) {
+  switch (action) {
+    case "link": {
+      const existing = await lastfm.getUser(userId);
+      if (existing) {
+        return msg.reply({
+          embeds: [new EmbedBuilder()
+            .setColor(getGlobalColor())
+            .setAuthor({ name: this.t(msg, "responses.lastfm.accountAuthor") })
+            .setDescription(this.t(msg, "responses.lastfm.alreadyLinked", { username: existing.username, prefix }))
+            .setFooter({ text: this.t(msg, "responses.lastfm.accountFooter", { prefix }) })]
+        });
+      }
+
+      let token;
+      try {
+        token = await lastfm.getAuthToken();
+      } catch (err) {
+        return msg.reply({
+          embeds: [new EmbedBuilder().setColor(ERROR_COLOR).setDescription(this.t(msg, "responses.lastfm.tokenFailed", { error: err.message }))]
+        });
+      }
+
+      const authUrl = lastfm.getAuthUrl(token);
+
+      let sent = false;
+      try {
+        const dm = await msg.author.createDM();
+        await dm.send({
+          embeds: [new EmbedBuilder()
+            .setColor(getGlobalColor())
+            .setTitle(this.t(msg, "responses.lastfm.authLinkTitle"))
+            .setDescription(this.t(msg, "responses.lastfm.authLinkBody", { url: authUrl, prefix, token }))
+          ]
+        });
+        sent = true;
+      } catch(e) { logger.warn("[LastFm] Error:", e?.message); }
+
+      const replyEmbed = new EmbedBuilder()
+        .setColor(getGlobalColor())
+        .setAuthor({ name: this.t(msg, "responses.lastfm.accountAuthor") })
+        .setTitle(this.t(msg, "responses.lastfm.authLinkTitle"))
+        .setDescription(
+          sent
+            ? this.t(msg, "responses.lastfm.authDM", { prefix })
+            : this.t(msg, "responses.lastfm.authDMFailed", { url: authUrl, prefix })
+        )
+        .setFooter({ text: this.t(msg, "responses.lastfm.accountFooter", { prefix }) });
+
+      return msg.reply({ embeds: [replyEmbed] });
+    }
+
+    case "confirm": {
+      let tokenValue = data.get("token")?.value;
+      if (!tokenValue) {
+        const rawContent = msg.message?.content ?? "";
+        const args = rawContent.split(/\s+/);
+        const confirmIdx = args.indexOf("confirm");
+        tokenValue = confirmIdx >= 0 ? args[confirmIdx + 1] : null;
+      }
+
+      if (!tokenValue) {
+        return msg.reply({
+          embeds: [new EmbedBuilder().setColor(ERROR_COLOR).setDescription(this.t(msg, "responses.lastfm.confirmUsage", { prefix }))]
+        });
+      }
+
+      let session;
+      try {
+        session = await lastfm.getSession(tokenValue);
+      } catch (err) {
+        return msg.reply({
+          embeds: [new EmbedBuilder().setColor(ERROR_COLOR).setDescription(this.t(msg, "responses.lastfm.confirmFailed", { error: err.message }))]
+        });
+      }
+
+      await lastfm.saveUser(userId, session.key, session.name);
+
+      return msg.reply({
+        embeds: [new EmbedBuilder()
+          .setColor(getGlobalColor())
+          .setAuthor({ name: this.t(msg, "responses.lastfm.accountAuthor") })
+          .setTitle(this.t(msg, "responses.lastfm.accountLinkedTitle"))
+          .setDescription(this.t(msg, "responses.lastfm.linked", { username: session.name }))
+          .setFooter({ text: this.t(msg, "responses.lastfm.accountFooter", { prefix }) })]
+      });
+    }
+
+    case "unlink": {
+      const user = await lastfm.getUser(userId);
+      if (!user) return msg.reply(notLinked(this, msg, prefix));
+
+      await lastfm.removeUser(userId);
+      return msg.reply({
+        embeds: [new EmbedBuilder()
+          .setColor(getGlobalColor())
+          .setAuthor({ name: this.t(msg, "responses.lastfm.accountAuthor") })
+          .setTitle(this.t(msg, "responses.lastfm.accountUnlinkedTitle"))
+          .setDescription(this.t(msg, "responses.lastfm.unlinked", { username: user.username }))
+          .setFooter({ text: this.t(msg, "responses.lastfm.accountFooter", { prefix }) })]
+      });
+    }
+
+    case "scrobble": {
+      const user = await lastfm.getUser(userId);
+      if (!user) return msg.reply(notLinked(this, msg, prefix));
+
+      const newState = !user.scrobbleEnabled;
+      await lastfm.setScrobble(userId, newState);
+
+      return msg.reply({
+        embeds: [new EmbedBuilder()
+          .setColor(getGlobalColor())
+          .setAuthor({ name: this.t(msg, "responses.lastfm.accountAuthor") })
+          .setTitle(this.t(msg, "responses.lastfm.scrobbleTitle"))
+          .setDescription(newState
+            ? this.t(msg, "responses.lastfm.scrobbleEnabled", { username: user.username })
+            : this.t(msg, "responses.lastfm.scrobbleDisabled")
+          )
+          .setFooter({ text: this.t(msg, "responses.lastfm.accountFooter", { prefix }) })]
+      });
+    }
+
+    case "np": {
+      const user = await lastfm.getUser(userId);
+      if (!user) return msg.reply(notLinked(this, msg, prefix));
+
+      let recentData;
+      try {
+        recentData = await lastfm.getRecentTracks(userId, 1);
+      } catch (err) {
+        return msg.reply({
+          embeds: [new EmbedBuilder().setColor(ERROR_COLOR).setDescription(this.t(msg, "responses.lastfm.fetchFailed", { error: err.message }))]
+        });
+      }
+
+      if (!recentData.length) {
+        return msg.reply({
+          embeds: [new EmbedBuilder().setColor(getGlobalColor()).setDescription(this.t(msg, "responses.lastfm.noRecent", { username: user.username }))]
+        });
+      }
+
+      const track = recentData[0];
+      const statusEmoji = track.now ? this.t(msg, "responses.lastfm.nowPlaying") : this.t(msg, "responses.lastfm.lastPlayed");
+      const embed = new EmbedBuilder()
+        .setColor(getGlobalColor())
+        .setAuthor({ name: statusEmoji, iconURL: track.image || undefined })
+        .setDescription(this.t(msg, "responses.lastfm.npTrackInfo", { name: track.name, artist: track.artist, url: track.url }))
+        .setFooter({ text: this.t(msg, "responses.lastfm.npFooter", { username: user.username }) });
+
+      return msg.reply({ embeds: [embed] });
+    }
+
+    case "profile": {
+      const profileUserId = targetUserId || userId;
+      const user = await lastfm.getUser(profileUserId);
+      if (!user) return msg.reply(notLinked(this, msg, prefix));
+
+      let info;
+      try {
+        info = await lastfm.getUserInfo(profileUserId);
+      } catch (err) {
+        return msg.reply({
+          embeds: [new EmbedBuilder().setColor(ERROR_COLOR).setDescription(this.t(msg, "responses.lastfm.fetchFailed", { error: err.message }))]
+        });
+      }
+
+      lastfm.syncUserScrobbleCount(profileUserId).catch(() => {});
+
+      const avatarUrl = info.image?.[3]?.["#text"] || info.image?.[2]?.["#text"] || null;
+      const regDate = info.registered?.unixtime ? new Date(+info.registered.unixtime * 1000).toLocaleDateString() : "unknown";
+      const scrobbleStatus = user.scrobbleEnabled
+        ? this.t(msg, "responses.lastfm.profileScrobbleEnabled")
+        : this.t(msg, "responses.lastfm.profileScrobbleDisabled");
+
+      const embed = new EmbedBuilder()
+        .setColor(getGlobalColor())
+        .setAuthor({ name: this.t(msg, "responses.lastfm.profileAuthor"), iconURL: avatarUrl || undefined, url: info.url })
+        .setTitle(info.name)
+        .setURL(info.url || undefined)
+        .setDescription(
+          `📅 **${this.t(msg, "responses.lastfm.profileFieldRegistered")}:** ${regDate}\n` +
+          `🔗 **[${this.t(msg, "responses.lastfm.profileLink", { url: info.url })}](${info.url})**`
+        )
+        .addFields(
+          {
+            name: this.t(msg, "responses.lastfm.profileFieldTotalScrobbles"),
+            value: `🎵 **${Utils.formatNumber(info.playcount ?? 0)}**`,
+            inline: true
+          },
+          {
+            name: this.t(msg, "responses.lastfm.profileFieldArtists"),
+            value: `🎤 **${Utils.formatNumber(info.artist_count ?? 0)}**`,
+            inline: true
+          },
+          {
+            name: this.t(msg, "responses.lastfm.profileFieldScrobbling"),
+            value: scrobbleStatus,
+            inline: true
+          }
+        )
+        .setFooter({ text: this.t(msg, "responses.lastfm.profileFooterPro", { prefix }) });
+
+      if (avatarUrl) {
+        embed.setThumbnail(avatarUrl);
+      }
+
+      return msg.reply({ embeds: [embed] });
+    }
+
+    case "playlists": {
+      const user = await lastfm.getUser(userId);
+      if (!user) return msg.reply(notLinked(this, msg, prefix));
+
+      let playlists;
+      try {
+        playlists = await lastfm.getPlaylists(userId);
+      } catch (err) {
+        return msg.reply({
+          embeds: [new EmbedBuilder().setColor(ERROR_COLOR).setDescription(this.t(msg, "responses.lastfm.fetchFailed", { error: err.message }))]
+        });
+      }
+
+      if (!playlists.length) {
+        return msg.reply({
+          embeds: [new EmbedBuilder()
+            .setColor(getGlobalColor())
+            .setAuthor({ name: this.t(msg, "responses.lastfm.playlistsAuthor") })
+            .setTitle(this.t(msg, "responses.lastfm.playlistsTitle", { username: user.username }))
+            .setDescription(this.t(msg, "responses.lastfm.noPlaylists", { username: user.username }))
+            .setFooter({ text: this.t(msg, "responses.lastfm.playlistsFooter", { prefix }) })]
+        });
+      }
+
+      const lines = playlists.map((pl, i) => {
+        const num = String(i + 1).padStart(2, " ");
+        const link = pl.url ? `[${pl.title}](${pl.url})` : pl.title;
+        return `\`${num}.\` ${link} — **${pl.trackCount}** tracks`;
+      });
+
+      const desc = lines.join("\n").slice(0, 4096);
+
+      return msg.reply({
+        embeds: [new EmbedBuilder()
+          .setColor(getGlobalColor())
+          .setAuthor({ name: this.t(msg, "responses.lastfm.playlistsAuthor") })
+          .setTitle(this.t(msg, "responses.lastfm.playlistsTitle", { username: user.username }))
+          .setDescription(desc)
+          .setFooter({ text: this.t(msg, "responses.lastfm.playlistsFooter", { prefix }) })]
+      });
+    }
+
+  }
+}

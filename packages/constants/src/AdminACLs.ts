@@ -2,6 +2,10 @@
 
 export const AdminACLs = {
 	WILDCARD: '*',
+	ECONOMY_READ: 'economy:read',
+	ECONOMY_CATALOG: 'economy:catalog',
+	ECONOMY_MISSIONS: 'economy:missions',
+	ECONOMY_ADJUST: 'economy:adjust',
 	ACL_SET_USER: 'acl:set:user',
 	ADMIN_API_KEY_MANAGE: 'admin_api_key:manage',
 	APPLICATION_LOOKUP: 'application:lookup',

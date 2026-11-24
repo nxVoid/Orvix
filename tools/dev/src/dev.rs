@@ -70,6 +70,12 @@ pub async fn run_dev(task_names: &[String], cloudflare_tunnel: bool) -> Result<i
         );
     }
     let gateway_readiness_port = configure_gateway_proxy_ports(&mut tasks, &selected)?;
+    if selected
+        .iter()
+        .any(|task| matches!(task.as_str(), "api" | "worker"))
+    {
+        crate::cache::ensure_local_cache().await?;
+    }
     let mut shutdown = ShutdownSignal::new()?;
     match ensure_js_dependencies_if_needed(&selected, &mut shutdown).await? {
         AwaitOutcome::Completed(()) => {}
@@ -263,7 +269,7 @@ async fn monitor_object_store_dependency() -> Result<()> {
             .await
     {
         bail!(
-            "Dev object store is unreachable and automatic repair failed: {error}\nRun `fluxer-dev media-proxy doctor --repair` inside the devcontainer, then restart `fluxer-dev dev`."
+            "Dev object store is unreachable and automatic repair failed: {error}\nRun `relay-dev media-proxy doctor --repair` inside the devcontainer, then restart `relay-dev dev`."
         );
     }
     println!("Dev object store recovered.");
@@ -325,13 +331,13 @@ fn normalize_selected_tasks(mut selected: Vec<String>, cloudflare_tunnel: bool) 
 
 pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
     let self_tool = self_tool_command()?;
-    let api_dir = ROOT.join("fluxer_api");
+    let api_dir = ROOT.join("relay_api");
     let api_tsx = api_dir.join("node_modules/.bin/tsx");
-    let app_dir = ROOT.join("fluxer_app");
+    let app_dir = ROOT.join("relay_app");
     let app_dev_server = ROOT.join("tools/ci/run.sh");
     let public_url = public_url();
     let admin_endpoint =
-        std::env::var("FLUXER_ADMIN_ENDPOINT").unwrap_or_else(|_| format!("{public_url}/admin"));
+        std::env::var("ORVIX_ADMIN_ENDPOINT").unwrap_or_else(|_| format!("{public_url}/admin"));
     let mut tasks = BTreeMap::new();
     let mut insert = |task: DevTask| {
         tasks.insert(task.name, task);
@@ -359,22 +365,22 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
         cwd: api_dir.clone(),
         env: vec![
             (
-                "FLUXER_S3_PUBLIC_ENDPOINT".to_owned(),
+                "ORVIX_S3_PUBLIC_ENDPOINT".to_owned(),
                 Some(public_url.clone()),
             ),
             (
-                "FLUXER_S3_FORCE_PATH_STYLE".to_owned(),
+                "ORVIX_S3_FORCE_PATH_STYLE".to_owned(),
                 Some(
-                    std::env::var("FLUXER_S3_FORCE_PATH_STYLE")
+                    std::env::var("ORVIX_S3_FORCE_PATH_STYLE")
                         .unwrap_or_else(|_| "true".to_owned()),
                 ),
             ),
             (
-                "FLUXER_DISABLE_RATE_LIMITS".to_owned(),
+                "ORVIX_DISABLE_RATE_LIMITS".to_owned(),
                 Some("true".to_owned()),
             ),
             (
-                "FLUXER_RELAX_REGISTRATION_RATE_LIMITS".to_owned(),
+                "ORVIX_RELAX_REGISTRATION_RATE_LIMITS".to_owned(),
                 Some("true".to_owned()),
             ),
         ],
@@ -400,9 +406,9 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
         env: vec![
             ("TOKIO_WORKER_THREADS".to_owned(), Some("4".to_owned())),
             ("RAYON_NUM_THREADS".to_owned(), Some("4".to_owned())),
-            ("FLUXER_APP_DEV_PORT".to_owned(), Some(APP_PORT.to_string())),
+            ("ORVIX_APP_DEV_PORT".to_owned(), Some(APP_PORT.to_string())),
             (
-                "FLUXER_STATIC_CDN_ENDPOINT".to_owned(),
+                "ORVIX_STATIC_CDN_ENDPOINT".to_owned(),
                 Some(public_url.clone()),
             ),
             (
@@ -413,24 +419,24 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
     });
     insert(DevTask {
         name: "app-proxy",
-        args: strings(&["cargo", "run", "-p", "fluxer_app_proxy"]),
+        args: strings(&["cargo", "run", "-p", "relay_app_proxy"]),
         cwd: ROOT.clone(),
         env: vec![
             (
-                "FLUXER_APP_PROXY_INDEX_UPSTREAM_URL".to_owned(),
+                "ORVIX_APP_PROXY_INDEX_UPSTREAM_URL".to_owned(),
                 Some(format!("http://{LOOPBACK_HOST}:{APP_PORT}/")),
             ),
             (
-                "FLUXER_APP_PROXY_PORT".to_owned(),
+                "ORVIX_APP_PROXY_PORT".to_owned(),
                 Some(APP_PROXY_PORT.to_string()),
             ),
             (
-                "FLUXER_STATIC_CDN_ENDPOINT".to_owned(),
+                "ORVIX_STATIC_CDN_ENDPOINT".to_owned(),
                 Some(public_url.clone()),
             ),
             (
-                "FLUXER_STATIC_DIR".to_owned(),
-                Some("fluxer_static".to_owned()),
+                "ORVIX_STATIC_DIR".to_owned(),
+                Some("relay_static".to_owned()),
             ),
             ("RELEASE_CHANNEL".to_owned(), Some("canary".to_owned())),
         ],
@@ -441,9 +447,9 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
             "cargo",
             "run",
             "-p",
-            "fluxer-media-proxy",
+            "relay-media-proxy",
             "--bin",
-            "fluxer-media-proxy",
+            "relay-media-proxy",
             "--",
             "--bind-host",
             ANY_HOST,
@@ -463,9 +469,9 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
             "cargo",
             "run",
             "-p",
-            "fluxer-push",
+            "relay-push",
             "--bin",
-            "fluxer-push",
+            "relay-push",
             "--",
             "--bind-host",
             ANY_HOST,
@@ -486,7 +492,7 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
         args: tool_args(&self_tool, &["gateway"]),
         cwd: ROOT.clone(),
         env: vec![(
-            "FLUXER_DISABLE_RATE_LIMITS".to_owned(),
+            "ORVIX_DISABLE_RATE_LIMITS".to_owned(),
             Some("true".to_owned()),
         )],
     });
@@ -495,7 +501,7 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
         args: tool_args(&self_tool, &["gateway", "single"]),
         cwd: ROOT.clone(),
         env: vec![(
-            "FLUXER_DISABLE_RATE_LIMITS".to_owned(),
+            "ORVIX_DISABLE_RATE_LIMITS".to_owned(),
             Some("true".to_owned()),
         )],
     });
@@ -506,36 +512,36 @@ pub fn task_table() -> Result<BTreeMap<&'static str, DevTask>> {
             "watch",
             "--no-dot-ignores",
             "-w",
-            "fluxer_admin/src",
+            "relay_admin/src",
             "-w",
-            "fluxer_admin/Cargo.toml",
+            "relay_admin/Cargo.toml",
             "-w",
-            "fluxer_admin/build.rs",
+            "relay_admin/build.rs",
             "-w",
-            "fluxer_admin/openapi-admin.json",
+            "relay_admin/openapi-admin.json",
             "-w",
-            "fluxer_admin/static",
+            "relay_admin/static",
             "-x",
-            "run -p fluxer_admin",
+            "run -p relay_admin",
         ]),
         cwd: ROOT.clone(),
         env: vec![
             (
-                "FLUXER_ADMIN_BASE_PATH".to_owned(),
+                "ORVIX_ADMIN_BASE_PATH".to_owned(),
                 Some("/admin".to_owned()),
             ),
-            ("FLUXER_ADMIN_ENDPOINT".to_owned(), Some(admin_endpoint)),
-            ("FLUXER_ADMIN_PORT".to_owned(), Some(ADMIN_PORT.to_string())),
+            ("ORVIX_ADMIN_ENDPOINT".to_owned(), Some(admin_endpoint)),
+            ("ORVIX_ADMIN_PORT".to_owned(), Some(ADMIN_PORT.to_string())),
             (
-                "FLUXER_API_ENDPOINT".to_owned(),
+                "ORVIX_API_ENDPOINT".to_owned(),
                 Some(format!("{public_url}/api")),
             ),
-            ("FLUXER_APP_ENDPOINT".to_owned(), Some(public_url.clone())),
+            ("ORVIX_APP_ENDPOINT".to_owned(), Some(public_url.clone())),
             (
-                "FLUXER_MEDIA_ENDPOINT".to_owned(),
+                "ORVIX_MEDIA_ENDPOINT".to_owned(),
                 Some(format!("{public_url}/media")),
             ),
-            ("FLUXER_STATIC_CDN_ENDPOINT".to_owned(), Some(public_url)),
+            ("ORVIX_STATIC_CDN_ENDPOINT".to_owned(), Some(public_url)),
         ],
     });
     insert(DevTask {
@@ -557,9 +563,9 @@ async fn wait_for_search_backend_if_needed(selected: &[String]) -> Result<()> {
     let env = merged_env(None, true)?;
     let backend = SearchBackend::from_env(&env)?;
     let search_url = env
-        .get("FLUXER_SEARCH_URL")
+        .get("ORVIX_SEARCH_URL")
         .filter(|url| !url.trim().is_empty())
-        .context("Missing FLUXER_SEARCH_URL for the selected search backend")?;
+        .context("Missing ORVIX_SEARCH_URL for the selected search backend")?;
     wait_http(backend.label(), search_url, 120).await
 }
 
@@ -571,14 +577,14 @@ enum SearchBackend {
 
 impl SearchBackend {
     fn from_env(env: &BTreeMap<String, String>) -> Result<Self> {
-        match env.get("FLUXER_SEARCH_ENGINE").map(String::as_str) {
+        match env.get("ORVIX_SEARCH_ENGINE").map(String::as_str) {
             Some("elasticsearch") => Ok(Self::Elasticsearch),
             Some("meilisearch") => Ok(Self::Meilisearch),
             Some(engine) => bail!(
-                "Unsupported FLUXER_SEARCH_ENGINE value {engine:?}; expected `meilisearch` or `elasticsearch`"
+                "Unsupported ORVIX_SEARCH_ENGINE value {engine:?}; expected `meilisearch` or `elasticsearch`"
             ),
             None => {
-                bail!("Missing FLUXER_SEARCH_ENGINE; expected `meilisearch` or `elasticsearch`")
+                bail!("Missing ORVIX_SEARCH_ENGINE; expected `meilisearch` or `elasticsearch`")
             }
         }
     }
@@ -606,7 +612,7 @@ fn strings(args: &[&str]) -> Vec<String> {
 }
 
 fn public_url() -> String {
-    std::env::var("FLUXER_PUBLIC_URL")
+    std::env::var("ORVIX_PUBLIC_URL")
         .unwrap_or_else(|_| format!("http://localhost:{DEV_PROXY_PORT}"))
 }
 
@@ -648,7 +654,7 @@ fn selected_needs_object_store(selected: &[String]) -> bool {
 }
 
 fn object_store_monitor_interval() -> Duration {
-    let seconds = std::env::var("FLUXER_DEV_OBJECT_STORE_MONITOR_INTERVAL_SECS")
+    let seconds = std::env::var("ORVIX_DEV_OBJECT_STORE_MONITOR_INTERVAL_SECS")
         .ok()
         .and_then(|value| value.parse::<u64>().ok())
         .filter(|value| *value > 0)
@@ -681,7 +687,7 @@ fn start_task(task: &DevTask) -> Result<Child> {
 }
 
 async fn wait_for_rust_services(processes: &mut [Child]) -> Result<()> {
-    let timeout = std::env::var("FLUXER_DEV_RUST_SERVICE_READY_TIMEOUT")
+    let timeout = std::env::var("ORVIX_DEV_RUST_SERVICE_READY_TIMEOUT")
         .ok()
         .and_then(|value| value.parse().ok())
         .unwrap_or(240);
@@ -707,7 +713,7 @@ async fn wait_for_rust_services(processes: &mut [Child]) -> Result<()> {
 }
 
 async fn wait_for_gateway(processes: &mut [Child], port: u16) -> Result<()> {
-    let timeout = std::env::var("FLUXER_DEV_GATEWAY_READY_TIMEOUT")
+    let timeout = std::env::var("ORVIX_DEV_GATEWAY_READY_TIMEOUT")
         .ok()
         .and_then(|value| value.parse().ok())
         .unwrap_or(180);
@@ -726,7 +732,7 @@ async fn wait_for_gateway(processes: &mut [Child], port: u16) -> Result<()> {
 }
 
 async fn wait_for_api(processes: &mut [Child]) -> Result<()> {
-    let timeout = std::env::var("FLUXER_DEV_API_READY_TIMEOUT")
+    let timeout = std::env::var("ORVIX_DEV_API_READY_TIMEOUT")
         .ok()
         .and_then(|value| value.parse().ok())
         .unwrap_or(180);
@@ -748,7 +754,7 @@ async fn wait_for_cloudflare_tunnel_routes(
     processes: &mut [Child],
     selected: &[String],
 ) -> Result<()> {
-    let timeout = std::env::var("FLUXER_CLOUDFLARE_TUNNEL_ROUTE_READY_TIMEOUT")
+    let timeout = std::env::var("ORVIX_CLOUDFLARE_TUNNEL_ROUTE_READY_TIMEOUT")
         .ok()
         .and_then(|value| value.parse().ok())
         .unwrap_or(300);

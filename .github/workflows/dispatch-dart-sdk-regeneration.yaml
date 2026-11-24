@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - fluxer_api/src/api/openapi/openapi.json
+      - relay_api/src/api/openapi/openapi.json
 
 permissions: {}
 
@@ -17,16 +17,16 @@ concurrency:
 jobs:
   dispatch:
     name: Dispatch regeneration
-    if: github.repository == 'fluxerapp/fluxer'
+    if: github.repository == 'orvixapp/orvix'
     runs-on: ubuntu-latest
     steps:
       - name: Create token
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
           repositories: dart_sdk
           permission-contents: write
 
@@ -34,5 +34,5 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.create-token.outputs.token }}
         run: |
-          gh api --method POST repos/fluxerapp/dart_sdk/dispatches \
-            --field event_type=fluxer-openapi-updated
+          gh api --method POST repos/orvixapp/dart_sdk/dispatches \
+            --field event_type=orvix-openapi-updated

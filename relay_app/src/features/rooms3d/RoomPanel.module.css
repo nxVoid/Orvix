@@ -1,0 +1,694 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+.root {
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+	display: flex;
+	flex-direction: column;
+	background: var(--background-primary, #13131c);
+	color: var(--text-primary, #f2f0f7);
+}
+.toolbar,
+.settings {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding: 12px;
+	border-bottom: 1px solid var(--background-modifier-accent, #ffffff14);
+}
+.root label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.root button,
+.root select,
+.root input[type='number'] {
+	padding: 7px 10px;
+	border: 1px solid var(--background-modifier-accent, #ffffff20);
+	border-radius: 6px;
+	background: var(--background-secondary, #20202b);
+	color: inherit;
+	font: inherit;
+}
+.root button {
+	cursor: pointer;
+}
+.root button:focus-visible,
+.root select:focus-visible,
+.root input:focus-visible {
+	outline: 2px solid #9061f9;
+	outline-offset: 2px;
+}
+.root button:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+.message {
+	padding: 12px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.hint {
+	padding: 8px 12px;
+	font-size: 12px;
+	color: var(--text-secondary, #b3afc3);
+}
+
+/* Visual Avatar Selector Modal */
+.modalOverlay {
+	position: absolute;
+	inset: 0;
+	z-index: 20;
+	background: rgba(10, 10, 16, 0.85);
+	backdrop-filter: blur(8px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+}
+
+.modalContent {
+	width: 100%;
+	max-width: 820px;
+	max-height: 85vh;
+	background: var(--background-primary, #171622);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 12px;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.modalHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modalHeader h2 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.categoryTabs {
+	display: flex;
+	gap: 8px;
+	padding: 12px 20px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+	overflow-x: auto;
+}
+
+.categoryTab {
+	background: transparent;
+	border: none;
+	border-radius: 20px;
+	padding: 6px 14px;
+	font-size: 13px;
+	color: var(--text-secondary, #aaa6bd);
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.categoryTab:hover {
+	background: rgba(255, 255, 255, 0.06);
+	color: var(--text-primary, #f2f0f7);
+}
+
+.categoryTabActive {
+	background: #9061f9 !important;
+	color: white !important;
+	font-weight: 500;
+}
+
+.avatarGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 14px;
+	padding: 20px;
+	overflow-y: auto;
+}
+
+.avatarCard {
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 10px;
+	padding: 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	text-align: left;
+}
+
+.avatarCard:hover {
+	background: rgba(255, 255, 255, 0.07);
+	border-color: rgba(144, 97, 249, 0.5);
+	transform: translateY(-2px);
+}
+
+.avatarCardActive {
+	border-color: #9061f9;
+	background: rgba(144, 97, 249, 0.12);
+	box-shadow: 0 0 16px rgba(144, 97, 249, 0.25);
+}
+
+.avatarCardHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.avatarCardName {
+	font-weight: 600;
+	font-size: 15px;
+}
+
+.avatarBadge {
+	font-size: 11px;
+	padding: 2px 7px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.08);
+	color: #c9c5d8;
+}
+
+.avatarDesc {
+	font-size: 12px;
+	line-height: 1.4;
+	color: var(--text-secondary, #9e9ab0);
+	flex: 1;
+}
+
+.activeTag {
+	font-size: 11px;
+	font-weight: 600;
+	color: #9061f9;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+/* Contextual In-Room Interaction Prompt */
+.interactionPrompt {
+	position: absolute;
+	bottom: 24px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	background: rgba(16, 14, 24, 0.88);
+	backdrop-filter: blur(8px);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	border-radius: 24px;
+	padding: 8px 18px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 14px;
+	color: #f2f0f7;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+	pointer-events: none;
+}
+
+.promptKey {
+	background: #9061f9;
+	color: white;
+	font-weight: 700;
+	font-size: 12px;
+	padding: 2px 8px;
+	border-radius: 6px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal Close Button */
+.modalCloseButton {
+	background: rgba(255, 255, 255, 0.06);
+	border: none;
+	color: #c9c5d8;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.modalCloseButton:hover {
+	background: rgba(255, 255, 255, 0.12);
+	color: white;
+}
+
+/* Room Browser Modal Styles */
+.roomBrowserContent {
+	width: 100%;
+	max-width: 960px;
+	max-height: 90vh;
+	background: rgba(18, 16, 28, 0.95);
+	backdrop-filter: blur(20px);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 16px;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+}
+
+.roomGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 16px;
+	padding: 20px;
+	overflow-y: auto;
+}
+
+.roomCard {
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 12px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	cursor: pointer;
+	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+	position: relative;
+}
+
+.roomCard:hover {
+	transform: translateY(-3px);
+	border-color: rgba(144, 97, 249, 0.6);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.roomCardActive {
+	border-color: #9061f9 !important;
+	box-shadow: 0 0 20px rgba(144, 97, 249, 0.35) !important;
+	background: rgba(144, 97, 249, 0.08) !important;
+}
+
+.roomCardBanner {
+	height: 100px;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px;
+}
+
+.roomCardIcon {
+	font-size: 40px;
+	filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+}
+
+.roomActivePill {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	background: #10b981;
+	color: white;
+	font-size: 11px;
+	font-weight: 700;
+	padding: 3px 8px;
+	border-radius: 20px;
+	letter-spacing: 0.03em;
+	box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.roomCapacityBadge {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	background: rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(6px);
+	color: #e2e0ea;
+	font-size: 11px;
+	font-weight: 600;
+	padding: 3px 8px;
+	border-radius: 6px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.roomCardBody {
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	flex: 1;
+}
+
+.roomCardTitle {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 700;
+	color: #f2f0f7;
+}
+
+.roomCardTagline {
+	margin: 0;
+	font-size: 12px;
+	font-weight: 500;
+	color: #a855f7;
+}
+
+.roomCardDesc {
+	margin: 6px 0;
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--text-secondary, #9e9ab0);
+	flex: 1;
+}
+
+.roomFeatureList {
+	list-style: none;
+	padding: 0;
+	margin: 8px 0 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 11.5px;
+	color: #c4c1d4;
+}
+
+.roomBrowserFooter {
+	padding: 16px 20px;
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: rgba(14, 12, 22, 0.8);
+}
+
+.secondaryButton {
+	background: rgba(255, 255, 255, 0.06);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 8px;
+	color: #c9c5d8;
+	padding: 8px 16px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.secondaryButton:hover {
+	background: rgba(255, 255, 255, 0.12);
+	color: white;
+}
+
+.primaryActionButton {
+	background: linear-gradient(135deg, #7c3aed 0%, #9061f9 100%);
+	border: none;
+	border-radius: 8px;
+	color: white;
+	padding: 9px 20px;
+	font-size: 13.5px;
+	font-weight: 700;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+	transition: all 0.15s ease;
+}
+
+.primaryActionButton:hover {
+	filter: brightness(1.1);
+	transform: translateY(-1px);
+	box-shadow: 0 6px 18px rgba(124, 58, 237, 0.5);
+}
+
+.primaryActionButton:disabled {
+	opacity: 0.5;
+	cursor: default;
+	transform: none;
+}
+
+/* Spark-Inspired 3D In-Room HUD */
+.hudOverlay {
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	pointer-events: none;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 16px;
+}
+
+.hudTopBar {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	pointer-events: auto;
+}
+
+.hudGlassPanel {
+	background: rgba(16, 14, 26, 0.85);
+	backdrop-filter: blur(14px);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 12px;
+	padding: 8px 14px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.hudRoomTitle {
+	font-size: 14px;
+	font-weight: 700;
+	color: #f2f0f7;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.hudBadge {
+	font-size: 11px;
+	font-weight: 600;
+	padding: 2px 7px;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.08);
+	color: #a8a4b8;
+}
+
+.hudBadgeOnline {
+	background: rgba(16, 185, 129, 0.18);
+	color: #34d399;
+	border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.hudPillButton {
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 8px;
+	color: #e2e0ea;
+	padding: 6px 12px;
+	font-size: 12.5px;
+	font-weight: 600;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	transition: all 0.15s ease;
+}
+
+.hudPillButton:hover {
+	background: rgba(255, 255, 255, 0.15);
+	color: white;
+	border-color: rgba(255, 255, 255, 0.25);
+}
+
+.hudPillButtonActive {
+	background: #9061f9 !important;
+	color: white !important;
+	border-color: #a855f7 !important;
+	box-shadow: 0 0 12px rgba(144, 97, 249, 0.4);
+}
+
+.hudPillButtonDanger {
+	background: rgba(239, 68, 68, 0.15);
+	color: #fca5a5;
+	border-color: rgba(239, 68, 68, 0.3);
+}
+
+.hudPillButtonDanger:hover {
+	background: rgba(239, 68, 68, 0.25);
+	color: white;
+	border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Center-Top Tutorial / Guidance Hint */
+.hudTutorialPill {
+	position: absolute;
+	top: 76px;
+	left: 50%;
+	transform: translateX(-50%);
+	pointer-events: auto;
+	background: rgba(18, 16, 28, 0.88);
+	backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 20px;
+	padding: 6px 16px;
+	font-size: 12px;
+	color: #d1cddf;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+	white-space: nowrap;
+}
+
+.hudTutorialKey {
+	background: rgba(255, 255, 255, 0.12);
+	color: white;
+	font-weight: 700;
+	font-size: 11px;
+	padding: 1px 6px;
+	border-radius: 4px;
+	border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Bottom Center Action Dock */
+.hudBottomDock {
+	align-self: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	pointer-events: auto;
+	margin-bottom: 8px;
+}
+
+.hudActionGroup {
+	background: rgba(16, 14, 26, 0.9);
+	backdrop-filter: blur(16px);
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	border-radius: 14px;
+	padding: 6px 10px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.hudChatInputWrap {
+	width: 380px;
+	max-width: 90vw;
+	position: relative;
+}
+
+.hudChatInput {
+	width: 100%;
+	background: rgba(14, 12, 22, 0.85);
+	backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	border-radius: 20px;
+	padding: 8px 16px;
+	color: #f2f0f7;
+	font-size: 13px;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+	transition: all 0.15s ease;
+}
+
+.hudChatInput:focus {
+	outline: none;
+	border-color: #9061f9;
+	box-shadow: 0 0 14px rgba(144, 97, 249, 0.35);
+	background: rgba(20, 18, 32, 0.95);
+}
+
+.hudChatInput::placeholder {
+	color: #8c889f;
+}
+
+/* Settings Dropdown Popover */
+.popoverBackdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 14;
+	pointer-events: auto;
+}
+
+.hudSettingsPopover {
+	position: absolute;
+	top: 52px;
+	right: 16px;
+	width: 280px;
+	max-width: calc(100vw - 32px);
+	max-height: calc(100vh - 80px);
+	overflow-y: auto;
+	background: rgba(20, 18, 32, 0.96);
+	backdrop-filter: blur(16px);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 12px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+	font-size: 13px;
+	z-index: 15;
+	pointer-events: auto;
+}
+
+.hudSettingsPopoverHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-weight: 700;
+	font-size: 14px;
+	color: #fff;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	padding-bottom: 8px;
+	margin-bottom: 4px;
+}
+
+.hudSettingsPopover label {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 12px;
+	color: #c9c5d8;
+}
+
+.hudSettingsPopover select,
+.hudSettingsPopover input[type='number'] {
+	width: 100%;
+	background: rgba(28, 25, 42, 0.95);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 6px;
+	padding: 8px 10px;
+	color: #fff;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.hudSettingsPopover select:focus,
+.hudSettingsPopover input[type='number']:focus {
+	outline: none;
+	border-color: #9061f9;
+	box-shadow: 0 0 8px rgba(144, 97, 249, 0.4);
+}
+
+.hudSettingsPopover input[type='range'] {
+	width: 100%;
+	accent-color: #9061f9;
+	cursor: pointer;
+}
+
+.hudSettingsPopover input[type='checkbox'] {
+	accent-color: #9061f9;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}

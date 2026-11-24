@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
-import {SsoRequiredReasons} from '@fluxer/errors/src/domains/auth/SsoRequiredError';
-import {getErrorMessageUnsafe} from '@fluxer/errors/src/i18n/ErrorI18n';
-import {ERROR_I18N_LOCALE_MESSAGES} from '@fluxer/errors/src/i18n/ErrorI18nLocales';
+import {APIErrorCodes} from '@relay/constants/src/ApiErrorCodes';
+import {SsoRequiredReasons} from '@relay/errors/src/domains/auth/SsoRequiredError';
+import {getErrorMessageUnsafe} from '@relay/errors/src/i18n/ErrorI18n';
+import {ERROR_I18N_LOCALE_MESSAGES} from '@relay/errors/src/i18n/ErrorI18nLocales';
 import {describe, expect, it} from 'vitest';
 
 describe('ErrorI18n global IP block messages', () => {
@@ -12,7 +12,7 @@ describe('ErrorI18n global IP block messages', () => {
 		appealEmail: 'support@fluxer.com',
 		expiresAt: 'Jan 12, 2027, 9:00 AM UTC',
 		reason: 'none',
-		product_name: 'Fluxer',
+		product_name: 'Orvix',
 	};
 	const SELF_HOSTED = {...HOSTED, appealEmail: null, product_name: 'chat.example.org'};
 
@@ -22,11 +22,11 @@ describe('ErrorI18n global IP block messages', () => {
 				const neutral = getErrorMessageUnsafe(code, locale, SELF_HOSTED);
 				expect(neutral, `${locale} ${code}`).not.toMatch(/@|\bnull\b|\{/);
 				expect(neutral, `${locale} ${code}`).toContain('chat.example.org');
-				expect(neutral, `${locale} ${code}`).not.toContain('Fluxer');
+				expect(neutral, `${locale} ${code}`).not.toContain('Orvix');
 				const hosted = getErrorMessageUnsafe(code, locale, HOSTED);
 				expect(hosted, `${locale} ${code}`).toContain('support@fluxer.com');
 				expect(hosted, `${locale} ${code}`).toContain('203.0.113.20');
-				expect(hosted, `${locale} ${code}`).toContain('Fluxer');
+				expect(hosted, `${locale} ${code}`).toContain('Orvix');
 			}
 		}
 	});

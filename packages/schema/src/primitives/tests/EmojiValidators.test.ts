@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import {GuildRoleCreateRequest, GuildRoleUpdateRequest} from '@fluxer/schema/src/domains/guild/GuildRequestSchemas';
-import {UnicodeRoleEmojiType} from '@fluxer/schema/src/primitives/EmojiValidators';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
+import {GuildRoleCreateRequest, GuildRoleUpdateRequest} from '@relay/schema/src/domains/guild/GuildRequestSchemas';
+import {UnicodeRoleEmojiType} from '@relay/schema/src/primitives/EmojiValidators';
 import {describe, expect, it} from 'vitest';
 
 const PNG_DATA_URI = 'data:image/png;base64,iVBORw0KGgo=';

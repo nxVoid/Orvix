@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c6c4d3"/><stop offset=".22" stop-color="#363640"/><stop offset=".53" stop-color="#15151c"/><stop offset=".76" stop-color="#77727e"/><stop offset="1" stop-color="#22212c"/></linearGradient>
+<linearGradient id="violet"><stop stop-color="#51426d"/><stop offset=".5" stop-color="#d1c1ec"/><stop offset="1" stop-color="#745491"/></linearGradient>
+<linearGradient id="gem" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#e8d9ff"/><stop offset=".25" stop-color="#ae88dd"/><stop offset=".6" stop-color="#65408e"/><stop offset="1" stop-color="#281a42"/></linearGradient>
+<mask id="aperture"><rect width="256" height="256" fill="white"/><circle cx="128" cy="128" r="98" fill="black"/></mask>
+</defs><g mask="url(#aperture)" fill="none">
+<circle cx="128" cy="128" r="111" stroke="#17161e" stroke-width="10"/>
+<circle cx="128" cy="128" r="115" stroke="url(#metal)" stroke-width="2.5"/>
+<circle cx="128" cy="128" r="108" stroke="url(#violet)" stroke-width="1.5"/>
+<path d="M20 139 A109 109 0 0 1 185 36 M236 117 A109 109 0 0 1 71 220" stroke="#746184" stroke-width="3"/>
+<path d="M40 63 L50 69 M203 188 L214 195 M77 24 L82 35 M173 222 L178 232" stroke="#0d0d12" stroke-width="6"/>
+<circle cx="128" cy="128" r="111" stroke="#ded0ef" stroke-width="1.7" stroke-dasharray="28 670" transform="rotate(-90 128 128)">
+<animateTransform attributeName="transform" type="rotate" from="-90 128 128" to="270 128 128" dur="12s" repeatCount="indefinite"/>
+</circle></g></svg>

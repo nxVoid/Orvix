@@ -1,0 +1,190 @@
+{
+  "Comment": "Fluxer music bot configuration. Requires Node.js >= 22.13.0. Run 'node --version' to verify.",
+  "token": "your bot token",
+  "instanceUrl": null,
+  "instanceUrl-Comment": "Optional base URL of a self-hosted Fluxer instance (e.g. 'https://chat.example.com'). Leave null or omit to connect to the official fluxer.app.",
+  "fluxer.js": {
+    "rest": {
+      "Comment": "REST client options. 'timeout' is ms before a request to api.fluxer.app is aborted (default: 15000). Raise if you see DOMException AbortError in logs.",
+      "timeout": 30000,
+      "retries": 3
+    }
+  },
+  "errorLogChannel": {
+    "enabled": false,
+    "channelId": "paste the ID of the channel that should receive error logs",
+    "forwardWarn": true,
+    "forwardInfo": false,
+    "startupMessage": true,
+    "minIntervalMs": 1500,
+    "maxQueue": 40,
+    "Comment": "Forward error logs and crash reports to a Fluxer channel. Every logger.error line (and every logger.warn line when forwardWarn=true) is posted there: player failures, node disconnects, database errors, plus fatal crash reports (uncaughtException, unhandledRejection) with uptime and memory. startupMessage=true sends a one-time 'Log channel connected' confirmation at boot through the real send path — if it fails, the console shows the exact permission/ID problem. forwardInfo=true ALSO forwards logger.info lines (boot activity, joins, recoveries) — useful for full visibility but much noisier; keep false for errors-only. Identical messages are deduplicated for 60s, sends are spaced by minIntervalMs, and floods beyond maxQueue pending messages are dropped with a summary line instead of spamming. Test delivery any time with the owner-only 'logtest' command. channelId: enable Developer Mode in the Fluxer app, right-click the target channel and copy its ID — the bot must be able to send messages there. Fully disabled unless enabled=true AND channelId is set."
+  },
+  "statusChannel": {
+    "enabled": false,
+    "channelId": "paste the ID of the public channel for live bot status and incident alerts",
+    "mentionRoleId": "",
+    "liveMessageId": null,
+    "updateIntervalSeconds": 300,
+    "statusPageUrl": "https://status.remix.bot",
+    "Comment": "Public-facing system status & incident reporting. Maintains a self-updating live health card (RAM bar, CPU %, Uptime, Ping, active players and subsystem status) and sends dual-color incident lifecycle embeds (🔴 Outage with Investigating status / ✅ Resolved with exact downtime duration) when subsystems experience disruptions. channelId: target Fluxer channel ID. mentionRoleId: optional role snowflake to mention on outages (e.g. @Status). updateIntervalSeconds: frequency in seconds to edit the live status card (default: 300 / 5 minutes). liveMessageId: set automatically by the bot or paste an existing message ID. Test with the owner-only 'statustest' command."
+  },
+  "prefix": "your desired prefix (such as %)",
+  "presenceInterval": null,
+  "presenceContents-Comment": "Each entry can be a plain string (e.g. 'Ping for Prefix') or an object. Objects support: text (required), emoji_name (unicode emoji or custom emoji name), emoji_id (snowflake ID for custom guild emojis only), activity ({ name, type, url? }). Activity types: 0=Playing, 1=Streaming, 2=Listening, 3=Watching, 5=Competing. For custom guild emojis, provide both emoji_name AND emoji_id. For unicode emojis, only emoji_name is needed.",
+  "presenceContents": [
+    {
+      "text": "Ping for Prefix | Hosted by https://kyun.sh/",
+      "emoji_name": "Remix",
+      "emoji_id": "1487652011819025844",
+      "activity": {
+        "name": "kyun.sh",
+        "type": 2
+      }
+    },
+    {
+      "text": "Ping for Prefix",
+      "emoji_name": "Remix",
+      "activity": {
+        "name": "music",
+        "type": 2
+      }
+    },
+    {
+      "text": "Ping for Prefix | By RedTech & NoLogicAlan",
+      "emoji_name": "Remix",
+      "activity": {
+        "name": "RedTech & NoLogicAlan",
+        "type": 2
+      }
+    }
+  ],
+  "nodelink": {
+    "host": "localhost",
+    "port": 3000,
+    "password": "youshallnotpass",
+    "requestTimeout": 60000,
+    "Comment": "requestTimeout: ms before a NodeLink HTTP request is aborted. Default: 60000 (60s). Raise if you see 'NodeLink request timeout' errors. All audio sources (Spotify, Deezer, Apple Music, etc.) are resolved by NodeLink, so configure source credentials in nodelink.config.json, not here."
+  },
+  "audio": {
+    "allowLoadstream": false,
+    "Comment": "Playback runs on NodeLink's /v4/trackstream endpoint only: WebM/Opus zero-re-encode passthrough, stale URLs auto-retried with a fresh resolve, and seeks handled in-process by the bot (no FFmpeg anywhere). Leave allowLoadstream = false unless you specifically need the legacy /v4/loadstream route. Set it to true only if your audio node exposes /v4/loadstream — it re-enables: server-side audio filters (bassboost, nightcore, ...), MP3/AAC/PCM sources (radio stations, Bilibili's AAC audio), and NodeLink-side seeking. loadstream is what required FFmpeg in the past."
+  },
+  "bilibili": {
+    "enabled": true,
+    "bind": "127.0.0.1",
+    "port": 0,
+    "advertiseHost": null,
+    "remoteProxy": null,
+    "remoteSecret": null,
+    "Comment": "Bilibili video playback (%play https://www.bilibili.com/video/BV... , b23.tv short links and ?p= parts included) — fully anonymous, no cookies needed. The bot talks to Bilibili's WBI-signed web API (survives the HTTP 412 risk-control blocks that hit plain API calls on many hosting IPs), prefers anonymous DASH audio (~130-170 kbps) and falls back to the html5 progressive mp4 for videos without DASH audio. Bilibili's CDN only serves audio to requests with a bilibili Referer, so the bot runs a tiny local HTTP proxy that adds those headers and hands a signed URL to your NodeLink/Lavalink node. Defaults work when the node runs on the same host as the bot (nodelink.host = localhost). bind/port: what the proxy listens on (port 0 = pick a free port). advertiseHost: the host your audio node should use to reach the proxy — set it (e.g. your bot's LAN IP or Docker service name, and bind 0.0.0.0) only when the node runs on a different machine. buvid3/buvid4/b_nut device cookies are generated and managed automatically. remoteProxy/remoteSecret: for split deployments where the audio node cannot reach the bot host — deploy the header-proxy as a Cloudflare Worker (download/bilibili-proxy-worker.js), then set remoteProxy = https://<worker>.workers.dev and remoteSecret = the worker's SECRET variable. When both are set, signed URLs point at the remote proxy and the local proxy never starts (audio flows Bilibili CDN -> worker -> node; the bot needs no inbound ports)."
+  },
+  "comment-radio": {
+    "message": "If you have radio stations you'd like to connect, add them to the array below. Radio stations must be rendered like following:",
+    "station": {
+      "name": "zamrock",
+      "detailedName": "ZamRock Radio",
+      "thumbnail": "https://zamrock.net/wp-content/uploads/2024/06/Zamrock_rd_logo_0004-1.gif",
+      "url": "url to stream from; this will be kept private",
+      "description": "Genre: Zamrock, provided by [Zamrock.net](https://zamrock.net/)",
+      "author": {
+        "name": "Zamrock",
+        "url": "https://zamrock.net"
+      },
+      "keyWords": [
+        "radio",
+        "zamrock",
+        "psychedelic",
+        "blues",
+        "rock"
+      ]
+    }
+  },
+  "radio": [],
+  "mysql": {
+    "host": "your-mysql-host.com",
+    "port": 3306,
+    "user": "youruser",
+    "password": "password of your user",
+    "database": "name of the target database",
+    "connectionLimit": 15,
+    "connectionLimit-Comment": "Maximum simultaneous MySQL connections shared across all bot services (default: 15). Prevents connection pool exhaustion in multi-shard deployments."
+  },
+  "redis": {
+    "enabled": false,
+    "url": "redis://127.0.0.1:6379",
+    "password": null,
+    "searchTtlSeconds": 86400,
+    "Comment": "Centralized Redis service for ultra-fast track search caching (<1ms repeat lookups), 24/7 session restoration across bot reboots, and cross-shard atomic playback statistics. If disabled or omitted, searches fall back to direct Lavalink/NodeLink queries and sessions fall back to MySQL."
+  },
+  "dashboard": {
+    "enabled": false,
+    "redis": {
+      "url": "redis://127.0.0.1:6379"
+    }
+  },
+  "lastfm": {
+    "Comment": "Last.fm integration: auto-scrobble songs, play loved/top/recent tracks. Register at https://www.last.fm/api/account/create",
+    "enabled": true,
+    "apiKey": "your_lastfm_api_key",
+    "apiSecret": "your_lastfm_api_secret",
+    "scrobbleThreshold": 0.5,
+    "scrobbleMinMs": 240000
+  },
+  "fluxerlist": {
+    "Comment": "FluxerList.com integration (docs.fluxerlist.com). Generate your own API key: FluxerList Dashboard -> Developer tab -> generate (starts with fl_, shown once). While enabled, the bot auto-posts its server count to your bot listing: once at startup, then every statsIntervalMinutes (default 30; endpoint allows 12/hour; identical counts are skipped to conserve the shared 3000 requests/month key budget). botId: your bot's Fluxer ID — leave empty to auto-detect at startup. serverId/serverSlug/botSlug: optional, used by the vote command. Set autoStats=false to disable the server-count sync only (vote command keeps working).",
+    "apiKey": "fl_your_api_key_here",
+    "botId": "",
+    "serverId": "remix-hq",
+    "serverSlug": "remix-hq",
+    "botSlug": "remix",
+    "autoStats": true,
+    "statsIntervalMinutes": 30
+  },
+  "owners": [
+    "user id for owner-only commands",
+    "another user id"
+  ],
+  "playerAFKTimeout": 60000,
+  "Comment2": "The above specifies the time in ms after which a player goes inactive; Optional.",
+  "customStatsFooter": "Text shown in the footer of the $prefixstats embed; optional.",
+  "embedColor": "0xe9196c",
+  "logging": {
+    "Comment": "Control which log categories appear in the console. Set 'enabled' to false to silence everything except errors. Set any category to false to silence just that group.",
+    "enabled": true,
+    "player": true,
+    "inactivity": true,
+    "aloneCheck": true,
+    "voiceState": true,
+    "voice247": true,
+    "voice": false,
+    "mediaplayer": false,
+    "commands": true,
+    "guild": true,
+    "recovery": false,
+    "settings": true,
+    "lavalink": true,
+    "dashboard": false,
+    "redis": false
+  },
+  "timers": {
+    "Comment": "All timing values in milliseconds (ms). 1000ms = 1 second, 60000ms = 1 minute.",
+    "inactivityTimeout": 180000,
+    "aloneCheckInterval": 10000,
+    "aloneCheckDebounce": 400,
+    "rejoin247Delay": 2000,
+    "leave247RejoinDelay": 3000,
+    "playerUpdateInterval": 5000,
+    "searchSessionTimeout": 30000,
+    "playerSessionTimeout": 300000,
+    "intentionalLeaveTTL": 8000,
+    "stayInVoice": true
+  },
+  "sharding": {
+    "totalShards": 1,
+    "shardsPerProcess": 1,
+    "respawn": true,
+    "spawnTimeout": 30000,
+    "spawnDelay": 5000
+  }
+}

@@ -16,23 +16,23 @@ runs:
       id: key
       if: always()
       shell: bash
-      run: echo "key=app-wasm-${{ runner.os }}-1.98.1-${{ hashFiles('Cargo.lock', 'tools/ci/src/app_wasm.rs', 'fluxer_app/rust/libfluxcore/Cargo.toml', 'fluxer_app/rust/libfluxcore/Cargo.lock', 'fluxer_app/rust/libfluxcore/.cargo/config.toml', 'fluxer_app/rust/libfluxcore/src/**', 'fluxer_app/rust/libfluxwebp/Cargo.toml', 'fluxer_app/rust/libfluxwebp/Cargo.lock', 'fluxer_app/rust/libfluxwebp/src/**', 'fluxer_app/rust/libfluxwebp/shim/**', 'fluxer_app/rust/libfluxwebp/simd/**', 'packages/markdown_parser/rust/Cargo.toml', 'packages/markdown_parser/rust/.cargo/config.toml', 'packages/markdown_parser/rust/src/**') }}" >> "$GITHUB_OUTPUT"
+      run: echo "key=app-wasm-${{ runner.os }}-1.98.1-${{ hashFiles('Cargo.lock', 'tools/ci/src/app_wasm.rs', 'relay_app/rust/libfluxcore/Cargo.toml', 'relay_app/rust/libfluxcore/Cargo.lock', 'relay_app/rust/libfluxcore/.cargo/config.toml', 'relay_app/rust/libfluxcore/src/**', 'relay_app/rust/libfluxwebp/Cargo.toml', 'relay_app/rust/libfluxwebp/Cargo.lock', 'relay_app/rust/libfluxwebp/src/**', 'relay_app/rust/libfluxwebp/shim/**', 'relay_app/rust/libfluxwebp/simd/**', 'packages/markdown_parser/rust/Cargo.toml', 'packages/markdown_parser/rust/.cargo/config.toml', 'packages/markdown_parser/rust/src/**') }}" >> "$GITHUB_OUTPUT"
     - name: Restore artifacts
       id: cache
       if: inputs.mode == 'restore'
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
       with:
         path: |
-          fluxer_app/pkgs/libfluxcore
-          fluxer_app/pkgs/libfluxwebp
-          fluxer_app/src/features/messaging/utils/markdown/parser/MarkdownParserWasmBytes.ts
+          relay_app/pkgs/libfluxcore
+          relay_app/pkgs/libfluxwebp
+          relay_app/src/features/messaging/utils/markdown/parser/MarkdownParserWasmBytes.ts
         key: ${{ steps.key.outputs.key }}
     - name: Save artifacts
       if: always() && inputs.mode == 'save'
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
       with:
         path: |
-          fluxer_app/pkgs/libfluxcore
-          fluxer_app/pkgs/libfluxwebp
-          fluxer_app/src/features/messaging/utils/markdown/parser/MarkdownParserWasmBytes.ts
+          relay_app/pkgs/libfluxcore
+          relay_app/pkgs/libfluxwebp
+          relay_app/src/features/messaging/utils/markdown/parser/MarkdownParserWasmBytes.ts
         key: ${{ steps.key.outputs.key }}

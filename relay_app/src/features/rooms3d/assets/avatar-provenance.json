@@ -1,0 +1,303 @@
+[
+  {
+    "file": "robot-expressive.glb",
+    "source": "https://raw.githubusercontent.com/mrdoob/three.js/b924f0cad4058dc4dde71445c796980c3cd5b5ed/examples/models/gltf/RobotExpressive/RobotExpressive.glb",
+    "revision": "b924f0cad4058dc4dde71445c796980c3cd5b5ed",
+    "license": "CC0-1.0",
+    "attribution": "Tomás Laulhé; modifications Don McCurdy",
+    "sha256": "047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+    "bytes": 463988,
+    "animations": [
+      "Dance",
+      "Death",
+      "Idle",
+      "Jump",
+      "No",
+      "Punch",
+      "Running",
+      "Sitting",
+      "Standing",
+      "ThumbsUp",
+      "Walking",
+      "WalkJump",
+      "Wave",
+      "Yes"
+    ],
+    "changes": "Original GLB bytes retained. Application normalizes display scale and optionally tints cloned materials at runtime."
+  },
+  {
+    "file": "fox.glb",
+    "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/5bad5aaa0bbb5d0f9cdc934e626f27d0df1e79b8/Models/Fox/glTF-Binary/Fox.glb",
+    "revision": "5bad5aaa0bbb5d0f9cdc934e626f27d0df1e79b8",
+    "license": "CC0-1.0 AND CC-BY-4.0",
+    "attribution": "PixelMannen (model); tomkranis (rig/animation); AsoboStudio and scurest (glTF conversion)",
+    "sha256": "d97044e701822bac5a62696459b27d7b375aada5de8574ed4362edbba94771f7",
+    "bytes": 162852,
+    "animations": [
+      "Survey",
+      "Walk",
+      "Run"
+    ],
+    "changes": "Original GLB bytes retained. Application normalizes display scale and optionally tints cloned materials at runtime."
+  },
+  {
+    "file": "human-casual.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_men/Casual.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "ab38ef171587e82b36486187ea00bcf80229e8795991178e387d87a4be8e746e",
+    "bytes": 1585528,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "human-casual2.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_men/Casual2.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "81d2ba6cfecbfd79cd85fd4b80e8551fe7b92522c6de34a9bbec2a4ddcb9fe18",
+    "bytes": 1559576,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "human-suit.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_men/Suit.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "a8394661eb58837cd1ee6d57d08482a43059128e98c76845c5f183cca45686f4",
+    "bytes": 1657884,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "human-punk.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_men/Punk.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "3a7a86ca148b574139f334e62a50fcf9f672e33b10fa8be19d428cb611638562",
+    "bytes": 1502160,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "human-spacesuit.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_men/Spacesuit.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "0d1012f7d0076825ab00151bc2e2c2e530441b551e16f44d93f65f12efd3e6e9",
+    "bytes": 2074216,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "human-swat.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_men/Swat.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "e053c87e2fe8041ba12d4421955307f2b3d6b119520ec9e0ffe5fea936217ddc",
+    "bytes": 1689912,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "human-adventurer.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_men/Adventurer.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "5ce5593d93d791180f57da8850ba0e2ee35a2a198fae8c093f29a17193690dbb",
+    "bytes": 2072200,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "woman-casual.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_women/Casual.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "7589333259ce9811eb8b0e91161d7a282a70fb8a2d9eca27a94544bcb7fbe593",
+    "bytes": 1605616,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "woman-formal.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_women/Formal.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "7751086d7606a726997cfdd028115cb744f9b14945757c64ca298d40c3f84809",
+    "bytes": 1572664,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "woman-punk.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_women/Punk.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "a10d665309120d450718df07e1bcb502b2d938e5bda89c4fa6013b4029a6733b",
+    "bytes": 1552828,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "woman-scifi.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_women/SciFi.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "b50855df5c8b68785e08fec6cb1f4f06545f665637c5f1c78e5ebebab5120a40",
+    "bytes": 1684036,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "woman-witch.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_women/Witch.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "88ad71b5f8ab6effd19d12e1d060c6594676f9aed38acf8be84e8a439b1670c1",
+    "bytes": 1670720,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "woman-soldier.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/modular_women/Soldier.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "e9497e81978e0304949d76ce8c652a4c8b0679a35b6858ea37d48dfa64af0d76",
+    "bytes": 1780752,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "Wave",
+      "Sit",
+      "Dance"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  },
+  {
+    "file": "knight.glb",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/single_knight_pack/KnightCharacter.glb",
+    "revision": "0128ca510d653bb04d6d1e4885bd8890b5050b4f",
+    "license": "CC0-1.0",
+    "attribution": "Quaternius (quaternius.com); universal character and animation assets",
+    "sha256": "f8713711c520641967c5194f3850d2eaf9b236af239f8fd2c391bd646a0c4207",
+    "bytes": 380608,
+    "animations": [
+      "Death",
+      "Idle",
+      "Idle_swordLeft",
+      "Idle_swordRight",
+      "Jump",
+      "Dance",
+      "Roll_sword",
+      "Run",
+      "Run_swordAttack",
+      "Run_swordRight",
+      "swordAttackJump",
+      "Walk",
+      "Wave",
+      "Sit"
+    ],
+    "changes": "Sanitized forward-kinematic locomotion and social clips (Idle, Walk, Run, Sit, Wave, Dance) with zero bone distortion."
+  }
+]

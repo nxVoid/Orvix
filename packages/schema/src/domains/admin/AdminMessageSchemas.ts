@@ -4,10 +4,10 @@ import {
 	BulkModerationBasis,
 	MessageDeletionBasis,
 	ModerationBasis,
-} from '@fluxer/schema/src/domains/admin/EnforcementSchemas';
-import {FilenameType} from '@fluxer/schema/src/primitives/FileValidators';
-import {createQueryIntegerType} from '@fluxer/schema/src/primitives/QueryValidators';
-import {Int32Type, SnowflakeStringType, SnowflakeType} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+} from '@relay/schema/src/domains/admin/EnforcementSchemas';
+import {FilenameType} from '@relay/schema/src/primitives/FileValidators';
+import {createQueryIntegerType} from '@relay/schema/src/primitives/QueryValidators';
+import {Int32Type, SnowflakeStringType, SnowflakeType} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 const FALSE_QUERY_VALUES = ['false', 'False', '0'];

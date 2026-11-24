@@ -13,7 +13,7 @@ concurrency:
 jobs:
   build:
     name: Build patched Electron (linux-${{ matrix.arch }})
-    runs-on: [self-hosted, Linux, X64, fluxer-electron-build]
+    runs-on: [self-hosted, Linux, X64, orvix-electron-build]
     timeout-minutes: 1440
     strategy:
       fail-fast: false
@@ -31,18 +31,18 @@ jobs:
           CONTAINER_MEMORY: 48g
           BUILD_JOBS: "8"
         run: >-
-          bash fluxer_desktop/electron/build-linux.sh
+          bash relay_desktop/electron/build-linux.sh
           --arch "${{ matrix.arch }}"
-          --build-root /srv/fluxer-electron-build/work
-          --output-dir "${{ runner.temp }}/fluxer-electron-artifacts"
+          --build-root /srv/orvix-electron-build/work
+          --output-dir "${{ runner.temp }}/orvix-electron-artifacts"
 
       - name: Upload patched Electron distribution
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: desktop-electron-linux-${{ matrix.arch }}
           path: |
-            ${{ runner.temp }}/fluxer-electron-artifacts/electron-v*-linux-${{ matrix.arch }}.zip
-            ${{ runner.temp }}/fluxer-electron-artifacts/electron-v*-linux-${{ matrix.arch }}.fluxer.json
+            ${{ runner.temp }}/orvix-electron-artifacts/electron-v*-linux-${{ matrix.arch }}.zip
+            ${{ runner.temp }}/orvix-electron-artifacts/electron-v*-linux-${{ matrix.arch }}.orvix.json
           if-no-files-found: error
           retention-days: 30
           compression-level: 0

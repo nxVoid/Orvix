@@ -6,9 +6,9 @@ import {
 	OperatorPassPurchaseResponse,
 	OperatorPassWallDeclineReasonSchema,
 	OperatorPassWallDisplayStateSchema,
-} from '@fluxer/schema/src/domains/operator_pass/OperatorPassSchemas';
-import {base64LengthForBytes, createBase64StringType} from '@fluxer/schema/src/primitives/FileValidators';
-import {createNamedStringLiteralUnion, SnowflakeStringType} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+} from '@relay/schema/src/domains/operator_pass/OperatorPassSchemas';
+import {base64LengthForBytes, createBase64StringType} from '@relay/schema/src/primitives/FileValidators';
+import {createNamedStringLiteralUnion, SnowflakeStringType} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 const AdminOperatorPassRuleText = z.string().trim().min(1).max(500);
@@ -338,7 +338,7 @@ export const AdminOperatorPassReleasePreviewResponse = z.object({
 export type AdminOperatorPassReleasePreviewResponse = z.infer<typeof AdminOperatorPassReleasePreviewResponse>;
 
 export const AdminOperatorPassReleasePublishRequest = z.object({
-	tag: z.string().trim().min(1).max(100).describe('The tag of the Fluxer release the list ships in'),
+	tag: z.string().trim().min(1).max(100).describe('The tag of the Orvix release the list ships in'),
 	released_at: z.iso.datetime().describe('When the release shipped'),
 });
 
@@ -497,7 +497,7 @@ export const AdminOperatorPassWithdrawalChannelSchema = createNamedStringLiteral
 
 export const AdminOperatorPassWithdrawRequest = z.object({
 	name: z.string().trim().min(1).max(200).describe('Name of the buyer who withdraws'),
-	received_at: z.iso.datetime().describe('When Fluxer received the withdrawal'),
+	received_at: z.iso.datetime().describe('When Orvix received the withdrawal'),
 	channel: AdminOperatorPassWithdrawalChannelSchema,
 });
 

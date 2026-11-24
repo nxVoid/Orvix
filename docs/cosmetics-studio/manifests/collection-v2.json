@@ -1,0 +1,166 @@
+{
+  "version": 2,
+  "currency": "RP",
+  "products": [
+    {
+      "id": "quantum_horizon",
+      "directory": "assets/banners/quantum_horizon",
+      "asset": "/economy/assets/quantum_horizon-v2.svg",
+      "static_asset": "/economy/assets/quantum_horizon-v2-static.webp",
+      "sha256": "d475334726797dc202f8e89e098f67840e69106fbd6068b9493e90aab701e8ca",
+      "quality_state": "reviewed"
+    },
+    {
+      "id": "violet_halo",
+      "directory": "assets/avatar-frames/violet_halo",
+      "asset": "/economy/assets/violet_halo-v2.svg",
+      "static_asset": "/economy/assets/violet_halo-v2-static.svg",
+      "sha256": "af2dd916c5fecaf1155824b3997202e73d2ed87e2eddd3d56400eba247e72285",
+      "quality_state": "reviewed"
+    },
+    {
+      "id": "amethyst_crown",
+      "directory": "assets/avatar-frames/amethyst_crown",
+      "asset": "/economy/assets/amethyst_crown-v2.svg",
+      "static_asset": "/economy/assets/amethyst_crown-v2-static.svg",
+      "sha256": "55166f1b4b393a62429fd68fc66dffd50bde65ba2e384291a22eb37c06e6df62",
+      "quality_state": "candidate"
+    },
+    {
+      "id": "midnight_orbit",
+      "directory": "assets/avatar-frames/midnight_orbit",
+      "asset": "/economy/assets/midnight_orbit-v2.svg",
+      "static_asset": "/economy/assets/midnight_orbit-v2-static.svg",
+      "sha256": "3b08d6604daa8168000b09c577c55b567cc7c413cadf1d33fa8eaf37f0e8aee0",
+      "quality_state": "reviewed"
+    },
+    {
+      "id": "gallery_nebula_spiral",
+      "directory": "assets/banners/gallery_nebula_spiral",
+      "asset": "/economy/assets/gallery_nebula_spiral-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_nebula_spiral-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "7deb1a251f6642142cc352f93792dbc7c5e2d42cae852377762c835ee1eaea79"
+    },
+    {
+      "id": "gallery_violet_aurora",
+      "directory": "assets/banners/gallery_violet_aurora",
+      "asset": "/economy/assets/gallery_violet_aurora-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_violet_aurora-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "1eb0caa362c5a41ad7566c1d1493d36839adb96625abf0221dfd63366d664f71"
+    },
+    {
+      "id": "gallery_lunar_eclipse",
+      "directory": "assets/banners/gallery_lunar_eclipse",
+      "asset": "/economy/assets/gallery_lunar_eclipse-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_lunar_eclipse-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "418642c57529c5ade63bb9b77d347b1ed03c28e3f65dbd7c4e79b95da081fbfd"
+    },
+    {
+      "id": "gallery_quantum_landscape",
+      "directory": "assets/banners/gallery_quantum_landscape",
+      "asset": "/economy/assets/gallery_quantum_landscape-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_quantum_landscape-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "4aa73b7ad455686e350f6fbde6752e2d9f1921fd3822ebb2cd1d458925caa136"
+    },
+    {
+      "id": "gallery_midnight_planets",
+      "directory": "assets/banners/gallery_midnight_planets",
+      "asset": "/economy/assets/gallery_midnight_planets-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_midnight_planets-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "66d8225bbb6efe01ddbd346e1757ebc93be2c60d5e41dfc6b33c19d4f6a14072"
+    },
+    {
+      "id": "gallery_violet_halo",
+      "directory": "assets/avatar-frames/gallery_violet_halo",
+      "asset": "/economy/assets/gallery_violet_halo-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_violet_halo-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "b698079d38075a4c61755f357d99b0a100226cd5b37d3fe92beb434cb97ab61a"
+    },
+    {
+      "id": "gallery_quantum_pulse",
+      "directory": "assets/avatar-frames/gallery_quantum_pulse",
+      "asset": "/economy/assets/gallery_quantum_pulse-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_quantum_pulse-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "9f3bf8f974b6b06de42396e185eac3bdc41e0995041ca905cd944992dbf19bc1"
+    },
+    {
+      "id": "gallery_amethyst_crown",
+      "directory": "assets/avatar-frames/gallery_amethyst_crown",
+      "asset": "/economy/assets/gallery_amethyst_crown-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_amethyst_crown-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "c4478ffcb50d998f6a5d82f5c315434ff496c355cb878f208c63815c044207b7"
+    },
+    {
+      "id": "gallery_midnight_orbit",
+      "directory": "assets/avatar-frames/gallery_midnight_orbit",
+      "asset": "/economy/assets/gallery_midnight_orbit-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_midnight_orbit-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "bea52b2fa95f10ffaddbc8744a067d37d9b2c70d6663a0b82cf0608fd2f73282"
+    },
+    {
+      "id": "gallery_prism_core",
+      "directory": "assets/avatar-frames/gallery_prism_core",
+      "asset": "/economy/assets/gallery_prism_core-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_prism_core-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "bbd650d141cdb3519196e200e6acc3bb367140008190a1fc7bed59efdfeac73b"
+    },
+    {
+      "id": "gallery_eclipse_glass",
+      "directory": "assets/nameplates/gallery_eclipse_glass",
+      "asset": "/economy/assets/gallery_eclipse_glass-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_eclipse_glass-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "d1cd3139c1348b661c07cc38ada58cfeb708f2980d90ff952bf043ac2fd56c64"
+    },
+    {
+      "id": "gallery_crystal_edge",
+      "directory": "assets/nameplates/gallery_crystal_edge",
+      "asset": "/economy/assets/gallery_crystal_edge-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_crystal_edge-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "a9fa83452236d6c72b4631b745ed185747e0570eedb60c380bb5c6c64e766fd5"
+    },
+    {
+      "id": "gallery_orbit_line",
+      "directory": "assets/nameplates/gallery_orbit_line",
+      "asset": "/economy/assets/gallery_orbit_line-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_orbit_line-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "1b3fec27da9a176a57cd276acdcbfda9e4a93e0c3ce47c5ec5b8f0972a307cd7"
+    },
+    {
+      "id": "gallery_lunar_citadel",
+      "directory": "assets/banners/gallery_lunar_citadel",
+      "asset": "/economy/assets/gallery_lunar_citadel-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_lunar_citadel-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "052af4ca6fd98fac8b5e71119d3906617fba5a630e28de9bf7cf1139d84b0fef"
+    },
+    {
+      "id": "gallery_nebula_swell",
+      "directory": "assets/banners/gallery_nebula_swell",
+      "asset": "/economy/assets/gallery_nebula_swell-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_nebula_swell-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "ab47dcc3f4950ec7727301517b12a3ec3146af4abe8e0b96fe1c83b730e774b2"
+    },
+    {
+      "id": "gallery_obsidian_gateway",
+      "directory": "assets/banners/gallery_obsidian_gateway",
+      "asset": "/economy/assets/gallery_obsidian_gateway-v1-static.webp",
+      "static_asset": "/economy/assets/gallery_obsidian_gateway-v1-static.webp",
+      "quality_state": "reviewed",
+      "sha256": "1626ae38e5adeca27f4f09ebc3b1ac811ae504af9d564c97f51396723a7e4ecb"
+    }
+  ]
+}

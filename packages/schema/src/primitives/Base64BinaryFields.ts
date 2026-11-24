@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {schemaMetadata, withSchemaMetadata} from '@fluxer/schema/src/SchemaMetadata';
+import {schemaMetadata, withSchemaMetadata} from '@relay/schema/src/SchemaMetadata';
 import type {z} from 'zod';
 
 interface BodyFieldPaths {

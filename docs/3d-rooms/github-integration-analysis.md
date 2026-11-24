@@ -1,0 +1,23 @@
+# GitHub-first integration analysis
+
+Inspected 2026-11-11 through GitHub repository API, upstream manifests, LICENSE and repository source trees. Push dates are activity signals, not guarantees of release quality. No external application was cloned or embedded.
+
+| Project | Verified upstream facts | Reusable parts / native feasibility | 16 users / integration decision |
+|---|---|---|---|
+| [Third Room](https://github.com/matrix-org/thirdroom) | Apache-2.0; not archived; last push 2023-08-30. React 17, forked Three 0.148, Rapier 0.11, ECS, workers/WASM, Matrix/Hydrogen and Olm. | glTF scene and worker/ECS design provide architectural references. Its identity, networking and audio are coupled to Matrix. Reusing its complete room implementation means substantial replacement work. | No current 16-person benchmark verified. Old dependency stack and separate Matrix identity/voice make it unsuitable here. Do not import its runtime. |
+| [Networked-Aframe](https://github.com/networked-aframe/networked-aframe) | MIT; not archived; last push 2026-10-12; manifest 0.14.3. A-Frame entity synchronization, buffered interpolation, Socket.IO 4.8, Express and open-easyrtc. | Entity templates and interpolation are useful references. A-Frame custom-element lifecycle can run in Chromium but is a second scene abstraction beside the existing React/Three application. | 16-user behavior depends on transport adapter/topology. Default peer media must not become a second voice infrastructure. Replacing authentication and authority is more work than integrating a renderer. Not selected. |
+| [Overte](https://github.com/overte-org/overte) | Active push 2026-11-11. Root LICENSE explicitly Apache-2.0, although GitHub metadata reports NOASSERTION; third-party LICENSES require separate review. Native C++/Qt client, domain/assignment servers and scriptable avatar/world systems. | Mature avatar, spatial audio and world concepts; native client/runtime is not an in-process React browser component. Assets have their own licenses. | Not a drop-in Electron renderer. Separate domain/media infrastructure conflicts with current voice ownership. No code/assets copied. |
+| [React Three Fiber](https://github.com/pmndrs/react-three-fiber) | MIT; active push 2026-10-21; package 9.8.1 supports React >=19 <19.4 and Three >=0.156. React renderer for Three, not a multiplayer or voice server. | Native React scene lifecycle, Canvas/useFrame/useThree, disposal and lazy loading. Compatible with this repository's React 19.3.1 and Three 0.186.1. | Selected rendering foundation. 16-avatar capacity is an application/server responsibility, not a renderer claim. Render/network benchmarks must be measured independently. |
+
+## Selection and licensing
+
+Use pinned `@react-three/fiber@9.8.1` with the already installed Three. Retain upstream MIT notices in package distributions and existing application AGPL notices. No copied third-party application source or commercial assets. The later avatar upgrade bundles separately reviewed CC0/CC-BY sample models, with pinned provenance and in-app attribution in the asset README. Three's bundled GLTFLoader/OrbitControls can be reused under its MIT license. Initial approved avatar geometry is authored locally; no arbitrary model URLs. Rapier/Drei are deferred until a measured need warrants another dependency: a bounded flat floor with shared analytic obstacle collisions does not require a physics engine.
+
+The existing Hono API authenticates every room operation and consults authoritative gateway voice membership. Ephemeral state lives in existing Valkey/cache, serialized under a cross-worker PostgreSQL advisory transaction lock. Persistent configuration/preferences use the existing PostgreSQL client. This avoids a second WebSocket server/framework and voice infrastructure. Initial authenticated HTTP snapshot exchange targets 10 Hz and is explicitly not presented as an existing gateway protocol extension; future gateway transport can preserve the same validated state contract.
+
+## Source details
+
+- [Third Room package manifest](https://github.com/matrix-org/thirdroom/blob/main/package.json), [license](https://github.com/matrix-org/thirdroom/blob/main/LICENSE).
+- [Networked-Aframe manifest](https://github.com/networked-aframe/networked-aframe/blob/master/package.json), [license](https://github.com/networked-aframe/networked-aframe/blob/master/LICENSE).
+- [Overte license](https://github.com/overte-org/overte/blob/master/LICENSE), [source](https://github.com/overte-org/overte/tree/master/interface).
+- [R3F peer dependencies](https://github.com/pmndrs/react-three-fiber/blob/master/packages/fiber/package.json), [license](https://github.com/pmndrs/react-three-fiber/blob/master/LICENSE).

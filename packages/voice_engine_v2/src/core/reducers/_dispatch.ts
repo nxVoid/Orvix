@@ -1,34 +1,34 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import assert from 'node:assert/strict';
-import {planDesiredState} from '@fluxer/voice_engine_v2/src/core/reducers/_plan';
-import {transitionCamera} from '@fluxer/voice_engine_v2/src/core/reducers/camera';
+import {planDesiredState} from '@relay/voice_engine_v2/src/core/reducers/_plan';
+import {transitionCamera} from '@relay/voice_engine_v2/src/core/reducers/camera';
 
-import {transitionCommand} from '@fluxer/voice_engine_v2/src/core/reducers/command';
-import {transitionConnection} from '@fluxer/voice_engine_v2/src/core/reducers/connection';
-import {transitionData} from '@fluxer/voice_engine_v2/src/core/reducers/data';
-import {transitionDevices} from '@fluxer/voice_engine_v2/src/core/reducers/devices';
-import {transitionE2ee} from '@fluxer/voice_engine_v2/src/core/reducers/e2ee';
-import {transitionGateway} from '@fluxer/voice_engine_v2/src/core/reducers/gateway';
-import {transitionImplementation} from '@fluxer/voice_engine_v2/src/core/reducers/implementation';
-import {transitionInboundVideo} from '@fluxer/voice_engine_v2/src/core/reducers/inboundVideo';
-import {transitionLifecycle} from '@fluxer/voice_engine_v2/src/core/reducers/lifecycle';
-import {transitionMicrophone} from '@fluxer/voice_engine_v2/src/core/reducers/microphone';
-import {transitionNativeAudioTap} from '@fluxer/voice_engine_v2/src/core/reducers/nativeAudioTap';
-import {transitionNativeCapture} from '@fluxer/voice_engine_v2/src/core/reducers/nativeCapture';
-import {transitionNativeFrameSink} from '@fluxer/voice_engine_v2/src/core/reducers/nativeFrameSink';
-import {transitionOutputDevice} from '@fluxer/voice_engine_v2/src/core/reducers/outputDevice';
-import {transitionParticipantVolume} from '@fluxer/voice_engine_v2/src/core/reducers/participantVolume';
-import {transitionPermissions} from '@fluxer/voice_engine_v2/src/core/reducers/permissions';
-import {transitionRemoteTrackSubscription} from '@fluxer/voice_engine_v2/src/core/reducers/remoteTrackSubscription';
-import {transitionRoom} from '@fluxer/voice_engine_v2/src/core/reducers/room';
-import {transitionScreen} from '@fluxer/voice_engine_v2/src/core/reducers/screen';
-import {transitionScreenAudio} from '@fluxer/voice_engine_v2/src/core/reducers/screenAudio';
-import {transitionSourceLifecycles} from '@fluxer/voice_engine_v2/src/core/reducers/sourceLifecycles';
-import {transitionStats} from '@fluxer/voice_engine_v2/src/core/reducers/stats';
-import {transitionUtilityPorts} from '@fluxer/voice_engine_v2/src/core/reducers/utilityPorts';
-import type {VoiceEngineV2Snapshot, VoiceEngineV2Transition} from '@fluxer/voice_engine_v2/src/core/state';
-import type {VoiceEngineV2Event} from '@fluxer/voice_engine_v2/src/protocol/events';
+import {transitionCommand} from '@relay/voice_engine_v2/src/core/reducers/command';
+import {transitionConnection} from '@relay/voice_engine_v2/src/core/reducers/connection';
+import {transitionData} from '@relay/voice_engine_v2/src/core/reducers/data';
+import {transitionDevices} from '@relay/voice_engine_v2/src/core/reducers/devices';
+import {transitionE2ee} from '@relay/voice_engine_v2/src/core/reducers/e2ee';
+import {transitionGateway} from '@relay/voice_engine_v2/src/core/reducers/gateway';
+import {transitionImplementation} from '@relay/voice_engine_v2/src/core/reducers/implementation';
+import {transitionInboundVideo} from '@relay/voice_engine_v2/src/core/reducers/inboundVideo';
+import {transitionLifecycle} from '@relay/voice_engine_v2/src/core/reducers/lifecycle';
+import {transitionMicrophone} from '@relay/voice_engine_v2/src/core/reducers/microphone';
+import {transitionNativeAudioTap} from '@relay/voice_engine_v2/src/core/reducers/nativeAudioTap';
+import {transitionNativeCapture} from '@relay/voice_engine_v2/src/core/reducers/nativeCapture';
+import {transitionNativeFrameSink} from '@relay/voice_engine_v2/src/core/reducers/nativeFrameSink';
+import {transitionOutputDevice} from '@relay/voice_engine_v2/src/core/reducers/outputDevice';
+import {transitionParticipantVolume} from '@relay/voice_engine_v2/src/core/reducers/participantVolume';
+import {transitionPermissions} from '@relay/voice_engine_v2/src/core/reducers/permissions';
+import {transitionRemoteTrackSubscription} from '@relay/voice_engine_v2/src/core/reducers/remoteTrackSubscription';
+import {transitionRoom} from '@relay/voice_engine_v2/src/core/reducers/room';
+import {transitionScreen} from '@relay/voice_engine_v2/src/core/reducers/screen';
+import {transitionScreenAudio} from '@relay/voice_engine_v2/src/core/reducers/screenAudio';
+import {transitionSourceLifecycles} from '@relay/voice_engine_v2/src/core/reducers/sourceLifecycles';
+import {transitionStats} from '@relay/voice_engine_v2/src/core/reducers/stats';
+import {transitionUtilityPorts} from '@relay/voice_engine_v2/src/core/reducers/utilityPorts';
+import type {VoiceEngineV2Snapshot, VoiceEngineV2Transition} from '@relay/voice_engine_v2/src/core/state';
+import type {VoiceEngineV2Event} from '@relay/voice_engine_v2/src/protocol/events';
 
 export function dispatchLocalMediaEvent(
 	snapshot: VoiceEngineV2Snapshot,

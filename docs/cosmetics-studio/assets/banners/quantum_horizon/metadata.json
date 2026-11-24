@@ -1,0 +1,58 @@
+{
+  "id": "quantum_horizon",
+  "name": "Quantum Horizon",
+  "version": 2,
+  "category": "animated_banner",
+  "rarity": "Epic",
+  "price_rp": 3800,
+  "premium": false,
+  "asset": "quantum_horizon-v2.svg",
+  "poster": "quantum_horizon-v2-static.webp",
+  "preview": "quantum_horizon-v2-static.webp",
+  "sizes": [
+    [
+      480,
+      160
+    ],
+    [
+      960,
+      320
+    ],
+    [
+      1440,
+      480
+    ]
+  ],
+  "safe_zone": {
+    "avatar": [
+      0,
+      240,
+      450,
+      480
+    ],
+    "text": [
+      80,
+      60,
+      840,
+      210
+    ]
+  },
+  "budgets": {
+    "max_asset_bytes": 420000,
+    "max_concurrent_animations": 2,
+    "target_fps": 30
+  },
+  "motion": {
+    "duration_seconds": 24,
+    "technique": "Independent alpha mist over raster master in SVG; six-pixel depth offset; matching endpoints and slopes",
+    "reduced_motion": "static poster",
+    "hidden": "poster replacement"
+  },
+  "license": "Original generated Relay artwork; project distribution under AGPL-3.0-or-later",
+  "source": "Built-in image_gen, separately generated landscape and transparent mist",
+  "provenance": [
+    "source/quantum_horizon/landscape-master.png",
+    "source/quantum_horizon/mist-master.png"
+  ],
+  "quality_state": "reviewed"
+}

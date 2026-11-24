@@ -6,4 +6,4 @@ export const PASSKEY_BRIDGE_PATH = '/passkey-bridge';
 
 export const PASSKEY_BRIDGE_RETURN_FRAGMENT_KEY = 'passkey-bridge';
 
-export const PASSKEY_BRIDGE_CHANNEL = 'fluxer:passkey-bridge';
+export const PASSKEY_BRIDGE_CHANNEL = 'orvix:passkey-bridge';

@@ -1,0 +1,157 @@
+/**
+ * @module src/commands/CommandLoader
+ * @description Dynamically loads command modules from a directory, registers
+ * their builders, and binds run handlers with error capture + error-id replies.
+ */
+
+import { pathToFileURL } from "node:url";
+import path from "node:path";
+import * as fs from "node:fs";
+import { logger } from "../core/Logger.mjs";
+import { Utils } from "../utils/Utils.mjs";
+
+/**
+ * @class CommandLoader
+ * @description Loads command files from a directory, registers builders with
+ * the CommandHandler, and dispatches "run" events to the matching run function.
+ *
+ * Command module shape (both shapes are accepted):
+ * - `export const command` (builder or builder-factory), `export const run`
+ * - default export object with the same keys
+ * - optional `exportDef: { name, object }` registers a global on the context
+ */
+export class CommandLoader {
+  /** @type {import('./CommandHandler.mjs').CommandHandler} */
+  commands;
+  /** @type {Map<string, string>} Command UID → file path. */
+  commandFiles = new Map();
+  /** @type {Map<string, Function>} Command UID → run function. */
+  runnables = new Map();
+  /** @type {object} Shared context (the bot instance). */
+  context;
+
+  /**
+   * @param {import('./CommandHandler.mjs').CommandHandler} commands
+   * @param {object} context - Bot context object (gets loader/runnables refs attached).
+   */
+  constructor(commands, context) {
+    this.commands = commands;
+    this.context = context;
+    this.context.loader ??= this;
+    this.context.commandFiles = this.commandFiles;
+    this.context.runnables = this.runnables;
+
+    this.commands.on("run", (data) => {
+      if (!this.runnables.has(data.command.uid)) return;
+      const runFc = this.runnables.get(data.command.uid);
+      const isPermError = (err) => {
+        return err?.code === "MISSING_PERMISSIONS" ||
+               err?.code === "COMMUNICATION_DISABLED" ||
+               err?.statusCode === 403;
+      };
+      const isRateLimitError = (err) => {
+        if (!err) return false;
+        if (err.name === "RateLimitError" || Number(err.statusCode ?? err.status) === 429) return true;
+        const msg = String(err.message || "").toLowerCase();
+        return msg.includes("rate limit");
+      };
+      const isNetworkError = (err) => {
+        if (!err) return false;
+        const status = Number(err.statusCode ?? err.status);
+        if (status === 502 || status === 503 || status === 504 || status === 520 || status === 521 || status === 522 || status === 524) return true;
+        const code = err.code || err.cause?.code || err.cause?.cause?.code;
+        if (code === "UND_ERR_SOCKET" || code === "ECONNRESET" || code === "ETIMEDOUT") return true;
+        const str = `${err.message || ""} ${err.cause?.message || ""}`.toLowerCase();
+        return str.includes("other side closed") || str.includes("fetch failed");
+      };
+      const sendErrorReply = (id) => {
+        Promise.resolve(data.message.reply("An error occurred. Error id: `#" + id + "`"))
+          .catch(err => {
+            if (isRateLimitError(err) || isPermError(err) || isNetworkError(err)) return;
+            logger.warn("[CommandHandler] Failed to send error-reply; error id #" + id + ":", err?.message || err?.code || err);
+          });
+      };
+      const handleCmdError = (e) => {
+        if (isPermError(e)) {
+          logger.warn(`[CommandHandler] Missing permissions in channel ${data.message?.channelId ?? data.message?.channel?.id}: ${e.code ?? e.message}`);
+          return;
+        }
+        if (isRateLimitError(e)) {
+          logger.warn(`[CommandHandler] Command '${data.command?.name ?? "unknown"}' rate limited by Fluxer API: ${e.message}`);
+          return;
+        }
+        if (isNetworkError(e)) {
+          logger.warn(`[CommandHandler] Transient network or socket closure during command '${data.command?.name ?? "unknown"}': ${e.code ?? e.message}`);
+          return;
+        }
+        const id = Utils.uid();
+        logger.error("Error running command; error id #" + id, e);
+        sendErrorReply(id);
+      };
+      try {
+        const result = runFc.call(this.context, data.message, data);
+        if (result && typeof result.catch === "function") {
+          result.catch(handleCmdError);
+        }
+      } catch (e) {
+        handleCmdError(e);
+      }
+    });
+  }
+
+  /**
+   * Normalize a module export to `{ command, run, exportDef }`.
+   * @param {object} cData
+   * @returns {object}
+   */
+  canonData(cData) {
+    if (cData.command !== undefined) {
+      return {
+        command:   cData.command,
+        run:       cData.run,
+        exportDef: cData.exportDef ?? cData.export ?? null
+      };
+    }
+    const d = cData.default ?? cData;
+    return {
+      command:   d.command,
+      run:       d.run,
+      exportDef: d.exportDef ?? d.export ?? null
+    };
+  }
+
+  /**
+   * @async Load all command files from a directory.
+   * @param {string} dir
+   * @returns {Promise<undefined[]>}
+   */
+  loadFromDir(dir) {
+    const files = fs.readdirSync(dir)
+        .filter(f => !f.startsWith(".") && (f.endsWith(".js") || f.endsWith(".mjs")));
+
+    return Promise.all(files.map(async commandFile => {
+      const file = path.join(dir, commandFile);
+
+      const cData = this.canonData(await import(pathToFileURL(file).href));
+
+      const builder = (typeof cData.command === "function")
+          ? cData.command.call(this.context)
+          : cData.command;
+
+      if (!builder) return logger.warn("No builder returned. Skipping '" + commandFile + "'");
+
+      if (cData.exportDef)
+        this.context[cData.exportDef.name] = cData.exportDef.object;
+
+      this.commands.addCommand(builder);
+      this.commandFiles.set(builder.uid, file);
+
+      if (!cData.run) return;
+
+      this.runnables.set(builder.uid, cData.run);
+      builder.subcommands.forEach(sub => {
+        this.runnables.set(sub.uid, cData.run);
+      });
+    }));
+  }
+}

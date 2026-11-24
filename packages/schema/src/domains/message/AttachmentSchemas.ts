@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {MessageAttachmentFlags, MessageAttachmentFlagsDescriptions} from '@fluxer/constants/src/ChannelConstants';
-import {withBase64Binary} from '@fluxer/schema/src/primitives/Base64BinaryFields';
-import {FilenameType} from '@fluxer/schema/src/primitives/FileValidators';
+import {MessageAttachmentFlags, MessageAttachmentFlagsDescriptions} from '@relay/constants/src/ChannelConstants';
+import {withBase64Binary} from '@relay/schema/src/primitives/Base64BinaryFields';
+import {FilenameType} from '@relay/schema/src/primitives/FileValidators';
 import {
 	coerceNumberFromString,
 	createBitflagInt32Type,
@@ -10,7 +10,7 @@ import {
 	Int32Type,
 	NonNegativeSafeIntegerType,
 	SnowflakeType,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 const ClientAttachmentBase = z.object({

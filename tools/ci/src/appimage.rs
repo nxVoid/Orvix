@@ -355,7 +355,7 @@ mod tests {
     #[test]
     fn stamping_rewrites_only_the_update_information_section() {
         let temp = tempfile::tempdir().unwrap();
-        let path = temp.path().join("Fluxer.AppImage");
+        let path = temp.path().join("Orvix.AppImage");
         let payload = b"squashfs-payload-that-must-survive".to_vec();
         write_elf(&path, 1, SECTION_SIZE, &payload);
         let before = fs::read(&path).unwrap();
@@ -383,7 +383,7 @@ mod tests {
     #[test]
     fn stamping_refuses_update_information_that_does_not_fit() {
         let temp = tempfile::tempdir().unwrap();
-        let path = temp.path().join("Fluxer.AppImage");
+        let path = temp.path().join("Orvix.AppImage");
         write_elf(&path, 1, 32, b"payload");
 
         let error = write_update_information(&path, &"z".repeat(64))
@@ -396,7 +396,7 @@ mod tests {
     #[test]
     fn stamping_refuses_an_appimage_without_an_update_information_section() {
         let temp = tempfile::tempdir().unwrap();
-        let path = temp.path().join("Fluxer.AppImage");
+        let path = temp.path().join("Orvix.AppImage");
         write_elf(&path, 1, SECTION_SIZE, b"payload");
         let mut bytes = fs::read(&path).unwrap();
         let names_start = (ELF64_HEADER_LEN as u64 + SECTION_SIZE) as usize;
@@ -410,7 +410,7 @@ mod tests {
     #[test]
     fn stamping_refuses_a_section_that_occupies_no_file_space() {
         let temp = tempfile::tempdir().unwrap();
-        let path = temp.path().join("Fluxer.AppImage");
+        let path = temp.path().join("Orvix.AppImage");
         write_elf(&path, SHT_NOBITS, SECTION_SIZE, b"payload");
 
         let error = update_info_span(&path).unwrap_err().to_string();
@@ -435,23 +435,23 @@ mod tests {
             artifact_url(
                 "stable",
                 "arm64",
-                "Fluxer-2026.904.135113-linux-arm64.AppImage"
+                "Orvix-2026.904.135113-linux-arm64.AppImage"
             ),
-            "https://pkgs.fluxer.com/desktop/stable/linux/arm64/Fluxer-2026.904.135113-linux-arm64.AppImage"
+            "https://pkgs.fluxer.com/desktop/stable/linux/arm64/Orvix-2026.904.135113-linux-arm64.AppImage"
         );
     }
 
     #[test]
     fn zsyncmake_writes_the_control_file_beside_the_stamped_artifact() {
         let command = zsyncmake_command(
-            Path::new("upload_staging/Fluxer-2026.904.135113-linux-x86_64.AppImage"),
-            "Fluxer-2026.904.135113-linux-x86_64.AppImage",
+            Path::new("upload_staging/Orvix-2026.904.135113-linux-x86_64.AppImage"),
+            "Orvix-2026.904.135113-linux-x86_64.AppImage",
             &artifact_url(
                 "stable",
                 "x64",
-                "Fluxer-2026.904.135113-linux-x86_64.AppImage",
+                "Orvix-2026.904.135113-linux-x86_64.AppImage",
             ),
-            Path::new("upload_staging/Fluxer-2026.904.135113-linux-x86_64.AppImage.zsync"),
+            Path::new("upload_staging/Orvix-2026.904.135113-linux-x86_64.AppImage.zsync"),
         );
 
         assert_eq!(command.program, std::ffi::OsString::from("zsyncmake"));
@@ -460,16 +460,16 @@ mod tests {
             vec![
                 std::ffi::OsString::from("-u"),
                 std::ffi::OsString::from(
-                    "https://pkgs.fluxer.com/desktop/stable/linux/x64/Fluxer-2026.904.135113-linux-x86_64.AppImage"
+                    "https://pkgs.fluxer.com/desktop/stable/linux/x64/Orvix-2026.904.135113-linux-x86_64.AppImage"
                 ),
                 std::ffi::OsString::from("-f"),
-                std::ffi::OsString::from("Fluxer-2026.904.135113-linux-x86_64.AppImage"),
+                std::ffi::OsString::from("Orvix-2026.904.135113-linux-x86_64.AppImage"),
                 std::ffi::OsString::from("-o"),
                 std::ffi::OsString::from(
-                    "upload_staging/Fluxer-2026.904.135113-linux-x86_64.AppImage.zsync"
+                    "upload_staging/Orvix-2026.904.135113-linux-x86_64.AppImage.zsync"
                 ),
                 std::ffi::OsString::from(
-                    "upload_staging/Fluxer-2026.904.135113-linux-x86_64.AppImage"
+                    "upload_staging/Orvix-2026.904.135113-linux-x86_64.AppImage"
                 ),
             ]
         );

@@ -61,7 +61,7 @@ const X_FORWARDED_FOR_HEADER: &str = "x-forwarded-for";
 pub async fn run_proxy(host: &str, port: u16) -> Result<()> {
     let bind = format!("{host}:{port}");
     let listener = TcpListener::bind(&bind).await?;
-    println!("Fluxer dev proxy listening on {}", listener.local_addr()?);
+    println!("Orvix dev proxy listening on {}", listener.local_addr()?);
 
     let http_client = reqwest::Client::builder()
         .pool_max_idle_per_host(64)
@@ -72,7 +72,7 @@ pub async fn run_proxy(host: &str, port: u16) -> Result<()> {
         .context("failed to build dev proxy HTTP client")?;
     let gateway_ports = gateway_proxy_ports()?;
     println!(
-        "Fluxer dev proxy gateway ports: {}",
+        "Orvix dev proxy gateway ports: {}",
         gateway_ports
             .iter()
             .map(u16::to_string)
@@ -386,7 +386,7 @@ pub struct RequestHead {
 }
 
 pub fn tunnel_public_redirect_location(request: &RequestHead) -> Option<String> {
-    let public_url = env::var("FLUXER_PUBLIC_URL").ok()?;
+    let public_url = env::var("ORVIX_PUBLIC_URL").ok()?;
     redirect_location_for_public_url(request, &public_url)
 }
 
@@ -398,7 +398,8 @@ pub fn redirect_location_for_public_url(request: &RequestHead, public_url: &str)
         return None;
     }
     let parsed_public_url = Url::parse(public_url).ok()?;
-    if is_local_url(&parsed_public_url) {
+    // Keep localhost usable as a secure browser context when the public origin is HTTP LAN.
+    if parsed_public_url.scheme() != "https" || is_local_url(&parsed_public_url) {
         return None;
     }
     let path = normalize_request_target(&request.path);
@@ -484,7 +485,7 @@ fn host_without_port(host: &str) -> Option<String> {
 
 pub fn route_for_path(path: &str) -> &'static ProxyRoute {
     let normalized_path = normalize_request_target(path);
-    let parsed_path = Url::parse(&format!("http://fluxer.local{normalized_path}"))
+    let parsed_path = Url::parse(&format!("http://orvix.local{normalized_path}"))
         .map(|url| url.path().to_owned())
         .unwrap_or_else(|_| {
             normalized_path
@@ -662,4 +663,65 @@ pub fn rewrite_head(
     lines.push(String::new());
     lines.push(String::new());
     lines.join("\r\n").into_bytes()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{RequestHead, redirect_location_for_public_url};
+
+    fn page_request(host: &str) -> RequestHead {
+        RequestHead {
+            method: "GET".to_owned(),
+            path: "/channels/@me?source=local".to_owned(),
+            version: "HTTP/1.1".to_owned(),
+            headers: vec![
+                ("host".to_owned(), host.to_owned()),
+                ("accept".to_owned(), "text/html".to_owned()),
+            ],
+        }
+    }
+
+    #[test]
+    fn http_lan_origin_keeps_localhost_and_loopback_pages_local() {
+        for host in ["localhost:8088", "127.0.0.1:8088", "[::1]:8088"] {
+            assert_eq!(
+                redirect_location_for_public_url(&page_request(host), "http://192.168.1.28:18088"),
+                None,
+            );
+        }
+    }
+
+    #[test]
+    fn https_tunnel_redirect_preserves_the_page_path_and_query() {
+        assert_eq!(
+            redirect_location_for_public_url(
+                &page_request("localhost:8088"),
+                "https://relay.example"
+            ),
+            Some("https://relay.example/channels/@me?source=local".to_owned()),
+        );
+    }
+
+    #[test]
+    fn public_origin_and_api_requests_are_not_redirected() {
+        assert_eq!(
+            redirect_location_for_public_url(
+                &page_request("relay.example"),
+                "https://relay.example"
+            ),
+            None,
+        );
+        let mut api_request = page_request("localhost:8088");
+        api_request.headers[1].1 = "application/json".to_owned();
+        assert_eq!(
+            redirect_location_for_public_url(&api_request, "https://relay.example"),
+            None
+        );
+        api_request.headers[1].1 = "text/html".to_owned();
+        api_request.method = "POST".to_owned();
+        assert_eq!(
+            redirect_location_for_public_url(&api_request, "https://relay.example"),
+            None
+        );
+    }
 }

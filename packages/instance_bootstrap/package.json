@@ -1,5 +1,5 @@
 {
-	"name": "@fluxer/instance_bootstrap",
+	"name": "@relay/instance_bootstrap",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -12,9 +12,9 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@fluxer/constants": "workspace:*",
-		"@fluxer/limits": "workspace:*",
-		"@fluxer/schema": "workspace:*"
+		"@relay/constants": "workspace:*",
+		"@relay/limits": "workspace:*",
+		"@relay/schema": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "catalog:",

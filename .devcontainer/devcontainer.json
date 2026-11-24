@@ -1,8 +1,8 @@
 {
-	"name": "Fluxer",
+	"name": "Orvix",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "workspace",
-	"workspaceFolder": "/workspaces/fluxer",
+	"workspaceFolder": "/workspaces/orvix",
 	"shutdownAction": "stopCompose",
 	"remoteUser": "vscode",
 	"hostRequirements": {
@@ -17,31 +17,31 @@
 	"forwardPorts": [3000, 8088, 8080, 8771, 8082, 8773, 3020, 8333],
 	"portsAttributes": {
 		"8088": {
-			"label": "Fluxer dev proxy",
+			"label": "Orvix dev proxy",
 			"onAutoForward": "notify"
 		},
 		"3000": {
 			"label": "Rspack dev server"
 		},
 		"3020": {
-			"label": "Fluxer admin"
+			"label": "Orvix admin"
 		},
 		"8333": {
 			"label": "SeaweedFS S3"
 		},
 		"8773": {
-			"label": "Fluxer app proxy"
+			"label": "Orvix app proxy"
 		}
 	},
-	"postCreateCommand": "bash /workspaces/fluxer/.devcontainer/fix-docker-socket.sh && bash /workspaces/fluxer/.devcontainer/fix-workspace-permissions.sh && bash /workspaces/fluxer/.devcontainer/direnv-allow.sh && cargo run -p fluxer-dev -- bootstrap",
-	"postStartCommand": "bash /workspaces/fluxer/.devcontainer/fix-docker-socket.sh && bash /workspaces/fluxer/.devcontainer/fix-workspace-permissions.sh && bash /workspaces/fluxer/.devcontainer/direnv-allow.sh && cargo run -p fluxer-dev -- post-start",
+	"postCreateCommand": "bash /workspaces/orvix/.devcontainer/fix-docker-socket.sh && bash /workspaces/orvix/.devcontainer/fix-workspace-permissions.sh && bash /workspaces/orvix/.devcontainer/direnv-allow.sh && cargo run -p relay-dev -- bootstrap",
+	"postStartCommand": "bash /workspaces/orvix/.devcontainer/fix-docker-socket.sh && bash /workspaces/orvix/.devcontainer/fix-workspace-permissions.sh && bash /workspaces/orvix/.devcontainer/direnv-allow.sh && cargo run -p relay-dev -- post-start",
 	"customizations": {
 		"vscode": {
 			"settings": {
 				"editor.defaultFormatter": "biomejs.biome",
 				"erlang.includePaths": ["."],
 				"search.exclude": {
-					"**/_build/default/lib/fluxer_gateway": true
+					"**/_build/default/lib/relay_gateway": true
 				},
 				"json.schemaDownload.trustedDomains": {
 					"http://json-schema.org/draft-07/schema#": true,

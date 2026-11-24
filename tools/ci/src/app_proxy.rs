@@ -22,7 +22,7 @@ use std::path::{Path, PathBuf};
 const DEFAULT_PUBLIC_ASSET_BASE_URL: &str = "https://fluxerstatic.com";
 const DEFAULT_APP_PROXY_BUNDLE_LOCAL_ASSETS: &str = "false";
 #[cfg(feature = "s3")]
-const DEFAULT_STATIC_BUCKET: &str = "fluxer-static";
+const DEFAULT_STATIC_BUCKET: &str = "relay-static";
 #[cfg(feature = "s3")]
 const DEFAULT_S3_ENDPOINT: &str = "https://ewr1.vultrobjects.com";
 #[cfg(feature = "s3")]
@@ -164,7 +164,7 @@ fn assets_image_ref(image_repo: &str, build_version: &str) -> String {
 fn image_repo() -> Result<String> {
     match env::var("IMAGE_REPO") {
         Ok(value) => Ok(value),
-        Err(_) => Ok(format!("ghcr.io/{}/fluxer-app-proxy", ghcr_owner()?)),
+        Err(_) => Ok(format!("ghcr.io/{}/relay-app-proxy", ghcr_owner()?)),
     }
 }
 
@@ -173,7 +173,7 @@ fn bake_command(targets: &[&str]) -> Result<CommandSpec> {
     let public_asset_base_url = env::var("PUBLIC_ASSET_BASE_URL")
         .unwrap_or_else(|_| DEFAULT_PUBLIC_ASSET_BASE_URL.to_string());
     Ok(CommandSpec::new("docker")
-        .args(["buildx", "bake", "-f", "fluxer_app_proxy/docker-bake.hcl"])
+        .args(["buildx", "bake", "-f", "relay_app_proxy/docker-bake.hcl"])
         .args(targets.iter().copied())
         .env("IMAGE_REPO", image_repo()?)
         .env("BUILD_VERSION", build_version)
@@ -207,8 +207,8 @@ fn bake_command(targets: &[&str]) -> Result<CommandSpec> {
 }
 
 fn default_app_proxy_cache_ref() -> String {
-    let owner = ghcr_owner().unwrap_or_else(|_| "fluxerapp".to_string());
-    format!("type=registry,ref=ghcr.io/{owner}/fluxer-app-proxy:buildcache-amd64")
+    let owner = ghcr_owner().unwrap_or_else(|_| "orvixapp".to_string());
+    format!("type=registry,ref=ghcr.io/{owner}/relay-app-proxy:buildcache-amd64")
 }
 
 fn ghcr_owner() -> Result<String> {
@@ -547,7 +547,7 @@ mod tests {
     fn resolves_calver_from_explicit_or_date_override() {
         let explicit = CalverEnv {
             build_version: Some("2026.520.1".to_string()),
-            fluxer_build_date: Some("2026-05-22T03:04:05Z".to_string()),
+            orvix_build_date: Some("2026-05-22T03:04:05Z".to_string()),
         };
         assert_eq!(
             resolve_calver(&explicit, dt(2026, 1, 1, 0, 0, 0)).unwrap(),
@@ -555,7 +555,7 @@ mod tests {
         );
 
         let generated = CalverEnv {
-            fluxer_build_date: Some("2026-05-20T01:02:03Z".to_string()),
+            orvix_build_date: Some("2026-05-20T01:02:03Z".to_string()),
             ..CalverEnv::default()
         };
         assert_eq!(
@@ -566,7 +566,7 @@ mod tests {
 
     #[test]
     fn dockerfile_guards_the_trim_on_an_absolute_asset_base_url() {
-        let dockerfile = include_str!("../../../fluxer_app_proxy/Dockerfile");
+        let dockerfile = include_str!("../../../relay_app_proxy/Dockerfile");
         let trim = dockerfile
             .split("FROM alpine:3.24 AS app-assets")
             .nth(1)
@@ -583,7 +583,7 @@ mod tests {
 
     #[test]
     fn dockerfile_workspace_manifest_keeps_the_release_profile() {
-        let dockerfile = include_str!("../../../fluxer_app_proxy/Dockerfile");
+        let dockerfile = include_str!("../../../relay_app_proxy/Dockerfile");
         let manifest = dockerfile
             .split("'[workspace]'")
             .nth(1)
@@ -604,7 +604,7 @@ mod tests {
         }
         assert!(
             !manifest.contains("panic"),
-            "fluxer_svc runs every request on its own tokio task, so a panicking handler must unwind instead of aborting the pod"
+            "relay_svc runs every request on its own tokio task, so a panicking handler must unwind instead of aborting the pod"
         );
     }
 
@@ -694,7 +694,7 @@ mod tests {
         ] {
             assert!(
                 workflow.contains(entry),
-                "a self-hosted dist that inherits the hosted CDN default would ship index.html pointing at fluxerstatic.com, so the workflow must set {entry}"
+                "a self-hosted dist that inherits the hosted CDN default would ship index.html pointing at orvixstatic.com, so the workflow must set {entry}"
             );
         }
     }

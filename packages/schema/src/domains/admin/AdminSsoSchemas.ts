@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {OAuth2TokenResponse} from '@fluxer/schema/src/domains/oauth/OAuthSchemas';
-import {SnowflakeStringType} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+import {OAuth2TokenResponse} from '@relay/schema/src/domains/oauth/OAuthSchemas';
+import {SnowflakeStringType} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 export const AdminSsoIdentityResponse = z.object({

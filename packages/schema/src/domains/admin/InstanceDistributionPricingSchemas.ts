@@ -3,7 +3,7 @@
 import {
 	DISTRIBUTION_ID_PATTERN,
 	DISTRIBUTION_RATE_BPS_MAX,
-} from '@fluxer/schema/src/domains/premium/DistributionSchemas';
+} from '@relay/schema/src/domains/premium/DistributionSchemas';
 import {z} from 'zod';
 
 const DISTRIBUTION_RULES_MAX = 32;

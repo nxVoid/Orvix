@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {LimitKey} from '@fluxer/constants/src/LimitConfigMetadata';
-import {DEFAULT_RESTRICTED_LIMITS} from '@fluxer/limits/src/LimitDefaults';
-import {applyRuleToResolvedLimits, ruleMatches, sortRulesBySpecificity} from '@fluxer/limits/src/LimitRuleRuntime';
+import type {LimitKey} from '@relay/constants/src/LimitConfigMetadata';
+import {DEFAULT_RESTRICTED_LIMITS} from '@relay/limits/src/LimitDefaults';
+import {applyRuleToResolvedLimits, ruleMatches, sortRulesBySpecificity} from '@relay/limits/src/LimitRuleRuntime';
 import type {
 	LimitConfigSnapshot,
 	LimitEvaluationOptions,
 	LimitEvaluationResult,
 	LimitMatchContext,
-} from '@fluxer/limits/src/LimitTypes';
+} from '@relay/limits/src/LimitTypes';
 
 export function resolveLimits(
 	snapshot: LimitConfigSnapshot,

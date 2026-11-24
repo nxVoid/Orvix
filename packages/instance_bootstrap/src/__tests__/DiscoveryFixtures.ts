@@ -46,7 +46,7 @@ export const DEPLOYED_OFFICIAL_DOCUMENT = {
 	push: {public_vapid_key: 'BPublicVapidKey'},
 	app_public: {
 		branding: {
-			product_name: 'Fluxer',
+			product_name: 'Orvix',
 			icon_url: 'https://cdn.fluxer.app/icon.png',
 			symbol_url: 'https://cdn.fluxer.app/symbol.png',
 			logo_url: 'https://cdn.fluxer.app/logo.png',

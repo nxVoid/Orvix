@@ -1,0 +1,92 @@
+services:
+  bot:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: remix-bot
+    restart: unless-stopped
+    command: node shard.mjs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nodelink:
+        condition: service_healthy
+    volumes:
+      - ./config.json:/app/config.json
+      - ../storage:/app/storage
+    environment:
+      - TZ=${TZ:-UTC}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${WEB_PORT:-8089}:80"
+    healthcheck:
+      test: ["CMD", "node", "-e", "const fs = require('fs'); try { const diff = Date.now() - fs.statSync('/tmp/.remix-health').mtimeMs; process.exit(diff < 30000 ? 0 : 1); } catch { process.exit(1); }"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    networks:
+      - remix-net
+
+  mysql:
+    image: mysql:8.4
+    container_name: remix-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-remix_root_pw}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-remix}
+      MYSQL_USER: ${MYSQL_USER:-remix}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-remix_pw}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-remix_root_pw}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - remix-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: remix-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - remix-net
+
+  nodelink:
+    image: performanc/nodelink:latest
+    container_name: remix-nodelink
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-UTC}
+    volumes:
+      - nodelink_data:/app/.cache
+      - ./nodelink.config.json:/app/config.json:ro
+    ports:
+      - "${NODELINK_PORT:-3005}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('net').connect(3000,'127.0.0.1').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - remix-net
+
+volumes:
+  mysql_data:
+  nodelink_data:
+
+networks:
+  remix-net:
+    driver: bridge

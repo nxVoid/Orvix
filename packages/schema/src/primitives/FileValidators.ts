@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {BASE64_IMAGE_MAX_SIZE} from '@fluxer/constants/src/LimitConstants';
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import {withBase64Binary} from '@fluxer/schema/src/primitives/Base64BinaryFields';
+import {BASE64_IMAGE_MAX_SIZE} from '@relay/constants/src/LimitConstants';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
+import {withBase64Binary} from '@relay/schema/src/primitives/Base64BinaryFields';
 import {
 	normalizeString,
 	withOpenApiType,
 	withStringLengthRangeValidation,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 const WHITESPACE_REGEX = /\s+/g;

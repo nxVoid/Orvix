@@ -3,7 +3,7 @@
 import {
 	getOperatorPassWallQuoteProblem,
 	normalizeOperatorPassWallQuote,
-} from '@fluxer/schema/src/domains/operator_pass/OperatorPassWallQuote';
+} from '@relay/schema/src/domains/operator_pass/OperatorPassWallQuote';
 import {describe, expect, it} from 'vitest';
 
 describe('normalizeOperatorPassWallQuote', () => {

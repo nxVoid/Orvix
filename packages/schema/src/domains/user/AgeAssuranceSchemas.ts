@@ -8,11 +8,11 @@ import {
 	APP_ATTEST_KEY_ID_BYTES,
 	AppAttestChallengePurposes,
 	AttestedAgeFloors,
-} from '@fluxer/constants/src/AgeAssuranceConstants';
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import {withBase64Binary} from '@fluxer/schema/src/primitives/Base64BinaryFields';
-import {base64LengthForBytes, isValidBase64} from '@fluxer/schema/src/primitives/FileValidators';
-import {createNamedStringLiteralUnion} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+} from '@relay/constants/src/AgeAssuranceConstants';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
+import {withBase64Binary} from '@relay/schema/src/primitives/Base64BinaryFields';
+import {base64LengthForBytes, isValidBase64} from '@relay/schema/src/primitives/FileValidators';
+import {createNamedStringLiteralUnion} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 const BASE64URL_REGEX = /^[A-Za-z0-9_-]+$/;

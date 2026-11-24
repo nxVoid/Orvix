@@ -30,7 +30,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/desktop-windows-release-check.yaml
-      - fluxer_desktop/scripts/release-check.mjs
+      - relay_desktop/scripts/release-check.mjs
 
 permissions:
   contents: read
@@ -63,7 +63,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          sparse-checkout: fluxer_desktop/scripts
+          sparse-checkout: relay_desktop/scripts
 
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -79,9 +79,9 @@ jobs:
           $zip = Join-Path $work 'portable.zip'
           Invoke-WebRequest -Uri "https://pkgs.fluxer.com/desktop/$env:CHANNEL/win32/$env:ARCH/$env:VERSION/portable" -OutFile $zip
           Expand-Archive -Path $zip -DestinationPath (Join-Path $work 'app')
-          $exe = Get-ChildItem -Path (Join-Path $work 'app') -Recurse -Filter 'Fluxer*.exe' | Where-Object { $_.Name -notlike '*_ExecutionStub.exe' } | Select-Object -First 1
-          if ($null -eq $exe) { throw "The portable build holds no Fluxer executable" }
-          $output = & node fluxer_desktop/scripts/release-check.mjs --app $exe.DirectoryName --channel $env:CHANNEL --expect-renderer $env:VERSION --expect-source bundled --app-arg=--disable-gpu --workdir (Join-Path $work 'runs') --timeout-seconds 240 2>&1
+          $exe = Get-ChildItem -Path (Join-Path $work 'app') -Recurse -Filter 'Orvix*.exe' | Where-Object { $_.Name -notlike '*_ExecutionStub.exe' } | Select-Object -First 1
+          if ($null -eq $exe) { throw "The portable build holds no Orvix executable" }
+          $output = & node relay_desktop/scripts/release-check.mjs --app $exe.DirectoryName --channel $env:CHANNEL --expect-renderer $env:VERSION --expect-source bundled --app-arg=--disable-gpu --workdir (Join-Path $work 'runs') --timeout-seconds 240 2>&1
           $code = $LASTEXITCODE
           $output | ForEach-Object { Write-Host $_ }
           if ($env:EXPECT_FAILURE -eq 'true') {
@@ -96,8 +96,8 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $channelDirs = @{ canary = 'fluxer_desktop_canary'; stable = 'fluxer_desktop' }
-          $dataDirs = @{ canary = 'fluxercanary'; stable = 'fluxer' }
+          $channelDirs = @{ canary = 'relay_desktop_canary'; stable = 'relay_desktop' }
+          $dataDirs = @{ canary = 'orvixcanary'; stable = 'orvix' }
           $installRoot = Join-Path $env:LOCALAPPDATA $channelDirs[$env:CHANNEL]
           $logPath = Join-Path (Join-Path $env:APPDATA $dataDirs[$env:CHANNEL]) 'logs\main.log'
           $failures = @()
@@ -111,7 +111,7 @@ jobs:
             Start-Process -FilePath $setup -ArgumentList '--silent' -Wait
             Start-Sleep -Seconds 5
             Get-Process | Where-Object { $_.Path -like "$installRoot*" } | Stop-Process -Force -ErrorAction SilentlyContinue
-            $exe = Get-ChildItem -Path (Join-Path $installRoot 'current') -Filter 'Fluxer*.exe' | Where-Object { $_.Name -notlike '*_ExecutionStub.exe' } | Select-Object -First 1
+            $exe = Get-ChildItem -Path (Join-Path $installRoot 'current') -Filter 'Orvix*.exe' | Where-Object { $_.Name -notlike '*_ExecutionStub.exe' } | Select-Object -First 1
             if ($null -eq $exe) { $failures += "$from did not install"; continue }
             if ($env:STALE_APPLY_RECORD -eq 'true') {
               $dataRoot = Split-Path (Split-Path $logPath -Parent) -Parent

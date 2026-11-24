@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {filterDisplayRoles} from '@fluxer/constants/src/RoleDisplayUtils';
+import {filterDisplayRoles} from '@relay/constants/src/RoleDisplayUtils';
 import {expect, test} from 'vitest';
 
 test('a hidden role is left out of what people see, and the member keeps it for permission checks', () => {

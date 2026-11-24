@@ -1,5 +1,5 @@
 {
-	"name": "@fluxer/errors",
+	"name": "@relay/errors",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -12,11 +12,11 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@fluxer/constants": "workspace:*",
-		"@fluxer/i18n": "workspace:*",
-		"@fluxer/logger": "workspace:*",
-		"@fluxer/record_utils": "workspace:*",
-		"@fluxer/schema": "workspace:*",
+		"@relay/constants": "workspace:*",
+		"@relay/i18n": "workspace:*",
+		"@relay/logger": "workspace:*",
+		"@relay/record_utils": "workspace:*",
+		"@relay/schema": "workspace:*",
 		"hono": "catalog:"
 	},
 	"devDependencies": {

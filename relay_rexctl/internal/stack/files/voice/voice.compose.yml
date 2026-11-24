@@ -1,0 +1,56 @@
+services:
+  livekit:
+    image: ${ORVIX_LIVEKIT_IMAGE:-livekit/livekit-server:v1.12.0}
+    restart: unless-stopped
+    stop_grace_period: ${ORVIX_VOICE_STOP_GRACE:-15m}
+    deploy:
+      resources:
+        limits:
+          memory: ${ORVIX_VOICE_MEMORY_LIMIT:-2g}
+    logging:
+      driver: json-file
+      options:
+        max-size: ${ORVIX_LOG_MAX_SIZE:-10m}
+        max-file: "${ORVIX_LOG_MAX_FILE:-3}"
+    environment:
+      GOMEMLIMIT: ${ORVIX_VOICE_GOMEMLIMIT:-1700MiB}
+      LIVEKIT_KEYS: "${ORVIX_VOICE_API_KEY:?Set ORVIX_VOICE_API_KEY}: ${ORVIX_VOICE_API_SECRET:?Set ORVIX_VOICE_API_SECRET}"
+      LIVEKIT_CONFIG: |
+        port: 7880
+        log_level: ${ORVIX_LIVEKIT_LOG_LEVEL:-info}
+        rtc:
+          tcp_port: ${ORVIX_VOICE_TCP_PORT:-7881}
+          udp_port: ${ORVIX_VOICE_UDP_PORT:-7882}
+          use_external_ip: ${ORVIX_VOICE_USE_EXTERNAL_IP:-true}
+          node_ip: "${ORVIX_VOICE_NODE_IP:-}"
+          ips:
+            includes: ${ORVIX_VOICE_ICE_IPS:-[]}
+          stun_servers:
+            - ${ORVIX_LIVEKIT_STUN_PRIMARY:-stun.l.google.com:19302}
+            - ${ORVIX_LIVEKIT_STUN_SECONDARY:-stun1.l.google.com:19302}
+          turn_servers: ${ORVIX_LIVEKIT_TURN_SERVERS:-[]}
+        turn:
+          enabled: false
+        webhook:
+          api_key: ${ORVIX_VOICE_API_KEY:?Set ORVIX_VOICE_API_KEY}
+          urls:
+            - ${ORVIX_VOICE_WEBHOOK_URL:?Set ORVIX_VOICE_WEBHOOK_URL}
+    ports:
+      - "${ORVIX_VOICE_BIND_IP:+${ORVIX_VOICE_BIND_IP}:}${ORVIX_VOICE_TCP_PORT:-7881}:${ORVIX_VOICE_TCP_PORT:-7881}/tcp"
+      - "${ORVIX_VOICE_BIND_IP:+${ORVIX_VOICE_BIND_IP}:}${ORVIX_VOICE_UDP_PORT:-7882}:${ORVIX_VOICE_UDP_PORT:-7882}/udp"
+    networks:
+      voice:
+        aliases:
+          - voice-${ORVIX_VOICE_ID:?Set ORVIX_VOICE_ID}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:7880/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+      start_interval: 1s
+
+networks:
+  voice:
+    external: true
+    name: ${ORVIX_VOICE_NETWORK:-orvix-voice}

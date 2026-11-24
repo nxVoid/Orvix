@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {I18nResult, TemplateCompiler} from '@fluxer/i18n/src/runtime/I18nTypes';
-import {renderTemplate} from '@fluxer/i18n/src/runtime/RenderTemplate';
-import {getEffectiveStaticLocale} from '@fluxer/i18n/src/runtime/StaticLocale';
 import type {default as MessageFormat, MessageFormatOptions} from '@messageformat/core';
+import type {I18nResult, TemplateCompiler} from '@relay/i18n/src/runtime/I18nTypes';
+import {renderTemplate} from '@relay/i18n/src/runtime/RenderTemplate';
+import {getEffectiveStaticLocale} from '@relay/i18n/src/runtime/StaticLocale';
 
 type StaticLocaleMessages<TKey extends string, TValue> = Partial<Record<TKey, TValue>>;
 

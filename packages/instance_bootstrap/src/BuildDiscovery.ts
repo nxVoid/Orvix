@@ -13,8 +13,8 @@ import type {
 	InstanceRegistration,
 	InstanceServices,
 	InstanceSso,
-} from '@fluxer/instance_bootstrap/src/Types';
-import type {LimitConfigSnapshot, LimitConfigWireFormat} from '@fluxer/limits/src/LimitTypes';
+} from '@relay/instance_bootstrap/src/Types';
+import type {LimitConfigSnapshot, LimitConfigWireFormat} from '@relay/limits/src/LimitTypes';
 
 export interface DiscoveryStaticInput {
 	apiCodeVersion: number;

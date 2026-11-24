@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 pub mod bootstrap;
+pub mod cache;
 pub mod cassandra;
 pub mod desktop;
 pub mod desktop_modules;

@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {BillingDocumentResponse} from '@fluxer/schema/src/domains/billing_documents/BillingDocumentSchemas';
-import {
-	DistributionQueryParam,
-	PriceDistributionResponse,
-} from '@fluxer/schema/src/domains/premium/DistributionSchemas';
-import {PremiumStoreSubscriptionState} from '@fluxer/schema/src/domains/premium/StoreBillingSchemas';
-import {createStringType, withOpenApiType} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {UserPremiumTypesSchema} from '@fluxer/schema/src/primitives/UserSettingsValidators';
+import {BillingDocumentResponse} from '@relay/schema/src/domains/billing_documents/BillingDocumentSchemas';
+import {DistributionQueryParam, PriceDistributionResponse} from '@relay/schema/src/domains/premium/DistributionSchemas';
+import {PremiumStoreSubscriptionState} from '@relay/schema/src/domains/premium/StoreBillingSchemas';
+import {createStringType, withOpenApiType} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {UserPremiumTypesSchema} from '@relay/schema/src/primitives/UserSettingsValidators';
 import {z} from 'zod';
 
 export const PremiumCurrency = z.string().regex(/^[A-Z]{3}$/);
@@ -381,7 +378,7 @@ const PremiumBillingState = z.object({
 	subscription: PremiumBillingSubscriptionResponse.nullable(),
 	documents: z
 		.array(BillingDocumentResponse)
-		.describe('Invoices, receipts, credit notes and refund notes Fluxer issued to the account, newest first'),
+		.describe('Invoices, receipts, credit notes and refund notes Orvix issued to the account, newest first'),
 	payment_methods: z.array(PremiumBillingPaymentMethodResponse),
 	refund_eligibility: SelfServeRefundEligibilityResponse,
 });

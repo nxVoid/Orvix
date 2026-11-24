@@ -1,0 +1,33 @@
+{
+  "id": "gallery_obsidian_gateway",
+  "name": "Obsidian Gateway",
+  "version": 1,
+  "category": "banner",
+  "rarity": "Rare",
+  "price_rp": 1800,
+  "premium": false,
+  "asset": "gallery_obsidian_gateway-v1-static.webp",
+  "poster": "gallery_obsidian_gateway-v1-static.webp",
+  "preview": "gallery_obsidian_gateway-v1-static.webp",
+  "animated": false,
+  "protected_aperture_ratio": null,
+  "sizes": [
+    [
+      380,
+      165
+    ]
+  ],
+  "budgets": {
+    "max_asset_bytes": 160000,
+    "max_concurrent_animations": 0,
+    "target_fps": 0
+  },
+  "motion": {
+    "duration_seconds": 0,
+    "technique": "Static reference-vector extraction"
+  },
+  "license": "User-provided Relay artwork; original source retained in docs/references/spark",
+  "source": "Original user-supplied PNG; SVG viewport composition and protected avatar aperture. Matching traced SVG is retained as reference.",
+  "quality_state": "reviewed",
+  "collection_id": "relay_gallery"
+}

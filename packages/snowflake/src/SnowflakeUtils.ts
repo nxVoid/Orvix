@@ -1,30 +1,30 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {createSnowflake, FLUXER_EPOCH, TIMESTAMP_SHIFT} from '@fluxer/snowflake/src/Snowflake';
+import {createSnowflake, RELAY_EPOCH, TIMESTAMP_SHIFT} from '@relay/snowflake/src/Snowflake';
 
-const FLUXER_EPOCH_NUMBER = Number(FLUXER_EPOCH);
+const ORVIX_EPOCH_NUMBER = Number(RELAY_EPOCH);
 
 function extractTimestampWithEpoch(snowflake: bigint, epoch: bigint): number {
 	return Number((snowflake >> TIMESTAMP_SHIFT) + epoch);
 }
 
 function toClampedTimestamp(timestamp: number): number {
-	if (timestamp <= FLUXER_EPOCH_NUMBER) {
-		return FLUXER_EPOCH_NUMBER;
+	if (timestamp <= ORVIX_EPOCH_NUMBER) {
+		return ORVIX_EPOCH_NUMBER;
 	}
 	return timestamp;
 }
 
 export function extractTimestamp(snowflake: string): number {
 	try {
-		return extractTimestampWithEpoch(BigInt(snowflake), FLUXER_EPOCH);
+		return extractTimestampWithEpoch(BigInt(snowflake), RELAY_EPOCH);
 	} catch (_error) {
 		return Number.NaN;
 	}
 }
 
 export function extractTimestampBigInt(snowflake: bigint): number {
-	return extractTimestampWithEpoch(snowflake, FLUXER_EPOCH);
+	return extractTimestampWithEpoch(snowflake, RELAY_EPOCH);
 }
 
 export function fromTimestamp(timestamp: number): string {
@@ -33,7 +33,7 @@ export function fromTimestamp(timestamp: number): string {
 
 export function fromTimestampBigInt(timestamp: number): bigint {
 	const clampedTimestamp = toClampedTimestamp(timestamp);
-	if (clampedTimestamp === FLUXER_EPOCH_NUMBER) {
+	if (clampedTimestamp === ORVIX_EPOCH_NUMBER) {
 		return 0n;
 	}
 	return createSnowflake({timestamp: clampedTimestamp});

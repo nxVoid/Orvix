@@ -4,8 +4,8 @@ import {
 	PREMIUM_PROFILE_BADGE_KINDS,
 	type ProfileBadgeKey,
 	type ProfileBadgeKind,
-} from '@fluxer/constants/src/BadgeConstants';
-import type {ValueOf} from '@fluxer/constants/src/ValueOf';
+} from '@relay/constants/src/BadgeConstants';
+import type {ValueOf} from '@relay/constants/src/ValueOf';
 
 export const UNCATEGORIZED_FOLDER_ID = -1;
 export const GuildFolderFlags = {
@@ -120,7 +120,7 @@ export const PremiumFlagsDescriptions: Record<keyof typeof PremiumFlags, string>
 	PERKS_DISABLED: 'User has temporarily disabled premium perks',
 	OPERATOR_PASS_BADGE_TIMESTAMP_HIDDEN: 'User has hidden when they first got the Operator Pass',
 	OPERATOR_PASS_BADGE_COUNT_HIDDEN: 'User has hidden how many Operator Passes they hold',
-	OPERATORS_CHANNEL_HIDDEN: 'User turned off the Fluxer Labs roles that open #operators',
+	OPERATORS_CHANNEL_HIDDEN: 'User turned off the Relay Labs roles that open #operators',
 };
 const LEGACY_PREMIUM_BADGE_HIDDEN = 1 << 1;
 const LEGACY_PREMIUM_BADGE_SEQUENCE_HIDDEN = 1 << 4;

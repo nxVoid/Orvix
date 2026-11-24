@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {canAuthorizeBotInvite, normalizeBotInvitePermissions} from '@fluxer/constants/src/BotPermissionUtils';
-import {Permissions} from '@fluxer/constants/src/ChannelConstants';
+import {canAuthorizeBotInvite, normalizeBotInvitePermissions} from '@relay/constants/src/BotPermissionUtils';
+import {Permissions} from '@relay/constants/src/ChannelConstants';
 import {describe, expect, it} from 'vitest';
 
 describe('canAuthorizeBotInvite', () => {

@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
-      FLUXER_CI_BIN: ${{ github.workspace }}/target/debug/fluxer-ci
+      ORVIX_CI_BIN: ${{ github.workspace }}/target/debug/relay-ci
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -51,17 +51,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          "$FLUXER_CI_BIN" ci --step install_dependencies
+          "$ORVIX_CI_BIN" ci --step install_dependencies
 
       - name: Run typecheck
         run: |
-          "$FLUXER_CI_BIN" ci --step typecheck
+          "$ORVIX_CI_BIN" ci --step typecheck
 
   test:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
-      FLUXER_CI_BIN: ${{ github.workspace }}/target/debug/fluxer-ci
+      ORVIX_CI_BIN: ${{ github.workspace }}/target/debug/relay-ci
       PNPM_TEST_WORKSPACE_CONCURRENCY: '2'
     steps:
       - name: Checkout code
@@ -87,11 +87,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          "$FLUXER_CI_BIN" ci --step install_dependencies
+          "$ORVIX_CI_BIN" ci --step install_dependencies
 
       - name: Run tests
         run: |
-          "$FLUXER_CI_BIN" ci --step test
+          "$ORVIX_CI_BIN" ci --step test
 
   rust:
     runs-on: blacksmith-4vcpu-ubuntu-2404
@@ -123,9 +123,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: rust-${{ runner.os }}-${{ hashFiles('fluxer_media_proxy/tools/install-native-deps.sh') }}-${{ hashFiles('Cargo.lock') }}
+          key: rust-${{ runner.os }}-${{ hashFiles('relay_media_proxy/tools/install-native-deps.sh') }}-${{ hashFiles('Cargo.lock') }}
           restore-keys: |
-            rust-${{ runner.os }}-${{ hashFiles('fluxer_media_proxy/tools/install-native-deps.sh') }}-
+            rust-${{ runner.os }}-${{ hashFiles('relay_media_proxy/tools/install-native-deps.sh') }}-
 
       - name: Install cargo-deny
         run: cargo install cargo-deny --version 0.20.2 --locked
@@ -134,7 +134,7 @@ jobs:
         run: cargo deny --locked check -D warnings
 
       - name: Check libfluxwebp dependencies
-        run: cargo deny --manifest-path fluxer_app/rust/libfluxwebp/Cargo.toml --config deny.toml --locked check licenses bans sources
+        run: cargo deny --manifest-path relay_app/rust/libfluxwebp/Cargo.toml --config deny.toml --locked check licenses bans sources
 
       - name: Check desktop native dependencies
         run: tools/ci/check-desktop-native-workspaces.sh dependencies
@@ -145,8 +145,8 @@ jobs:
       - name: Cache native media dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
-          path: /opt/fluxer-native
-          key: media-native-${{ runner.os }}-${{ hashFiles('fluxer_media_proxy/tools/install-native-deps.sh') }}
+          path: /opt/orvix-native
+          key: media-native-${{ runner.os }}-${{ hashFiles('relay_media_proxy/tools/install-native-deps.sh') }}
 
       - name: Install native dependencies
         run: |
@@ -180,19 +180,19 @@ jobs:
             xz-utils \
             yasm \
             zlib1g-dev
-          sudo fluxer_media_proxy/tools/install-native-deps.sh /opt/fluxer-native
-          echo "PKG_CONFIG_PATH=/opt/fluxer-native/lib/pkgconfig:/opt/fluxer-native/lib64/pkgconfig" >> "$GITHUB_ENV"
-          echo "LD_LIBRARY_PATH=/opt/fluxer-native/lib:/opt/fluxer-native/lib64" >> "$GITHUB_ENV"
-          echo "/opt/fluxer-native/bin" >> "$GITHUB_PATH"
+          sudo relay_media_proxy/tools/install-native-deps.sh /opt/orvix-native
+          echo "PKG_CONFIG_PATH=/opt/orvix-native/lib/pkgconfig:/opt/orvix-native/lib64/pkgconfig" >> "$GITHUB_ENV"
+          echo "LD_LIBRARY_PATH=/opt/orvix-native/lib:/opt/orvix-native/lib64" >> "$GITHUB_ENV"
+          echo "/opt/orvix-native/bin" >> "$GITHUB_PATH"
 
       - name: Install Node.js dependencies
-        run: pnpm --filter fluxer_admin install
+        run: pnpm --filter relay_admin install
 
       - name: Check formatting
         run: cargo fmt --all -- --check
 
       - name: Check formatting (libfluxwebp)
-        run: cargo fmt --manifest-path fluxer_app/rust/libfluxwebp/Cargo.toml -- --check
+        run: cargo fmt --manifest-path relay_app/rust/libfluxwebp/Cargo.toml -- --check
 
       - name: Check formatting (desktop native workspaces)
         run: tools/ci/check-desktop-native-workspaces.sh fmt
@@ -207,19 +207,19 @@ jobs:
         run: |
           set -euo pipefail
           command -v ffmpeg
-          test "$(command -v ffmpeg)" = /opt/fluxer-native/bin/ffmpeg
+          test "$(command -v ffmpeg)" = /opt/orvix-native/bin/ffmpeg
           ffmpeg -hide_banner -version
 
       - name: Run tests
         env:
-          FLUXER_REQUIRE_MEDIA_FIXTURES: "1"
+          ORVIX_REQUIRE_MEDIA_FIXTURES: "1"
         run: cargo test --workspace --all-features --locked
 
   gateway:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
-      FLUXER_CI_BIN: ${{ github.workspace }}/target/debug/fluxer-ci
+      ORVIX_CI_BIN: ${{ github.workspace }}/target/debug/relay-ci
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -233,8 +233,8 @@ jobs:
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
           workspaces: |
-            fluxer_gateway/native/guild_member_list_oset_nif -> target
-            fluxer_gateway/native/push_markdown_plaintext_nif -> target
+            relay_gateway/native/guild_member_list_oset_nif -> target
+            relay_gateway/native/push_markdown_plaintext_nif -> target
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Set up ci helper
@@ -252,29 +252,29 @@ jobs:
         with:
           path: |
             ~/.cache/rebar3
-            fluxer_gateway/_build
-            !fluxer_gateway/_build/default/lib/fluxer_gateway/**
-            !fluxer_gateway/_build/test/lib/fluxer_gateway/**
+            relay_gateway/_build
+            !relay_gateway/_build/default/lib/relay_gateway/**
+            !relay_gateway/_build/test/lib/relay_gateway/**
           key: >-
-            rebar3-${{ runner.os }}-otp28-rebar3.27.3-${{ hashFiles('fluxer_gateway/rebar.lock',
-            'fluxer_gateway/rebar.config') }}
+            rebar3-${{ runner.os }}-otp28-rebar3.27.3-${{ hashFiles('relay_gateway/rebar.lock',
+            'relay_gateway/rebar.config') }}
           restore-keys: |
             rebar3-${{ runner.os }}-otp28-rebar3.27.3-
 
       - name: Drop restored gateway build output
-        run: rm -rf fluxer_gateway/_build/default/lib/fluxer_gateway fluxer_gateway/_build/test/lib/fluxer_gateway
+        run: rm -rf relay_gateway/_build/default/lib/relay_gateway relay_gateway/_build/test/lib/relay_gateway
 
       - name: Check formatting
         run: |
-          "$FLUXER_CI_BIN" ci --step gateway_fmt
+          "$ORVIX_CI_BIN" ci --step gateway_fmt
 
       - name: Compile
         run: |
-          "$FLUXER_CI_BIN" ci --step gateway_compile
+          "$ORVIX_CI_BIN" ci --step gateway_compile
 
       - name: Run dialyzer
         run: |
-          "$FLUXER_CI_BIN" ci --step gateway_dialyzer
+          "$ORVIX_CI_BIN" ci --step gateway_dialyzer
 
       - name: Save rebar3 dependencies
         if: always() && github.ref == 'refs/heads/main' && steps.rebar3-cache.outputs.cache-hit != 'true'
@@ -282,18 +282,18 @@ jobs:
         with:
           path: |
             ~/.cache/rebar3
-            fluxer_gateway/_build
-            !fluxer_gateway/_build/default/lib/fluxer_gateway/**
-            !fluxer_gateway/_build/test/lib/fluxer_gateway/**
+            relay_gateway/_build
+            !relay_gateway/_build/default/lib/relay_gateway/**
+            !relay_gateway/_build/test/lib/relay_gateway/**
           key: >-
-            rebar3-${{ runner.os }}-otp28-rebar3.27.3-${{ hashFiles('fluxer_gateway/rebar.lock',
-            'fluxer_gateway/rebar.config') }}
+            rebar3-${{ runner.os }}-otp28-rebar3.27.3-${{ hashFiles('relay_gateway/rebar.lock',
+            'relay_gateway/rebar.config') }}
 
   knip:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
-      FLUXER_CI_BIN: ${{ github.workspace }}/target/debug/fluxer-ci
+      ORVIX_CI_BIN: ${{ github.workspace }}/target/debug/relay-ci
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -318,9 +318,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          "$FLUXER_CI_BIN" ci --step install_dependencies
+          "$ORVIX_CI_BIN" ci --step install_dependencies
 
-      - name: Restore fluxer_app wasm artifacts
+      - name: Restore relay_app wasm artifacts
         id: app-wasm
         uses: ./.github/actions/app-wasm-cache
         with:
@@ -328,9 +328,9 @@ jobs:
 
       - name: Run knip
         run: |
-          "$FLUXER_CI_BIN" ci --step knip
+          "$ORVIX_CI_BIN" ci --step knip
 
-      - name: Save fluxer_app wasm artifacts
+      - name: Save relay_app wasm artifacts
         if: always() && github.ref == 'refs/heads/main' && steps.app-wasm.outputs.cache-hit != 'true'
         uses: ./.github/actions/app-wasm-cache
         with:
@@ -362,10 +362,10 @@ jobs:
         run: pnpm exec eslint . --max-warnings 0
 
       - name: Check data-flx attributes
-        run: pnpm --filter fluxer_app theming:data-flx:check
+        run: pnpm --filter relay_app theming:data-flx:check
 
       - name: Check self-host env forwarding
-        run: pnpm --filter @fluxer/config self-host-env:check
+        run: pnpm --filter @relay/config self-host-env:check
 
   i18n:
     runs-on: ubuntu-24.04
@@ -393,10 +393,10 @@ jobs:
         run: |
           if ! git diff --exit-code -- \
             packages/errors/src/i18n/weblate \
-            fluxer_api/pkgs/email/src/email_i18n/weblate \
-            fluxer_api/pkgs/email/src/email_i18n/EmailI18nTypes.generated.ts \
-            fluxer_api/pkgs/email/src/email_html/EmailHtmlLayouts.generated.ts \
-            fluxer_api/src/api/content_i18n/weblate; then
+            relay_api/pkgs/email/src/email_i18n/weblate \
+            relay_api/pkgs/email/src/email_i18n/EmailI18nTypes.generated.ts \
+            relay_api/pkgs/email/src/email_html/EmailHtmlLayouts.generated.ts \
+            relay_api/src/api/content_i18n/weblate; then
             echo "::error::Static catalogs are out of sync with their sources. Run 'pnpm i18n:compile' and commit the result."
             exit 1
           fi
@@ -418,10 +418,10 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --filter fluxer_docs...
+        run: pnpm install --frozen-lockfile --filter relay_docs...
 
       - name: Build documentation
-        run: pnpm --filter fluxer_docs build
+        run: pnpm --filter relay_docs build
 
   fonts:
     runs-on: ubuntu-24.04

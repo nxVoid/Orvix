@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {ThemeTypes} from '@fluxer/constants/src/UserConstants';
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
+import {ThemeTypes} from '@relay/constants/src/UserConstants';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
 import {
 	CaptchaProviderSchema,
 	InstantAccountAvailabilitySchema,
-} from '@fluxer/schema/src/domains/account/AccountTierSchemas';
+} from '@relay/schema/src/domains/account/AccountTierSchemas';
 import {
 	WebAuthnAuthenticationOptions,
 	WebAuthnAuthenticationResponse,
 	WebAuthnRegistrationResponse,
-} from '@fluxer/schema/src/domains/auth/WebAuthnSchemas';
-import {GuildEntryResult} from '@fluxer/schema/src/domains/user/AccountSchemas';
-import {UserPartialResponse, UserPrivateResponse} from '@fluxer/schema/src/domains/user/UserResponseSchemas';
+} from '@relay/schema/src/domains/auth/WebAuthnSchemas';
+import {GuildEntryResult} from '@relay/schema/src/domains/user/AccountSchemas';
+import {UserPartialResponse, UserPrivateResponse} from '@relay/schema/src/domains/user/UserResponseSchemas';
 import {
 	createNamedStringLiteralUnion,
 	createStringType,
 	SnowflakeStringType,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {EmailType, GlobalNameType, PasswordType, UsernameType} from '@fluxer/schema/src/primitives/UserValidators';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {EmailType, GlobalNameType, PasswordType, UsernameType} from '@relay/schema/src/primitives/UserValidators';
 import {z} from 'zod';
 
 const RegisterThemeType = createNamedStringLiteralUnion(
@@ -334,7 +334,7 @@ export const UsernameAvailabilityResponse = z.object({
 
 export type UsernameAvailabilityResponse = z.infer<typeof UsernameAvailabilityResponse>;
 
-const DESKTOP_HANDOFF_RETURN_URI_PATTERN = /^fluxer(?:-canary|-development)?:\/\/handoff$/u;
+const DESKTOP_HANDOFF_RETURN_URI_PATTERN = /^orvix(?:-canary|-development)?:\/\/handoff$/u;
 
 export const DesktopHandoffReturnMethod = z.enum(['deep_link', 'code']);
 

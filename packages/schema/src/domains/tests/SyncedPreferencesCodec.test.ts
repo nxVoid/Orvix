@@ -12,18 +12,18 @@ import {
 	SYNCED_PREFERENCES_MAX_ENCODED_LENGTH,
 	SyncedPreferencesDecodeError,
 	SyncedPreferencesSchema,
-} from '@fluxer/schema/src/domains/user/SyncedPreferencesCodec';
-import {AccessibilitySettingsSchema} from '@fluxer/schema/src/gen/fluxer/user/preferences/v1/accessibility_pb';
+} from '@relay/schema/src/domains/user/SyncedPreferencesCodec';
+import {AccessibilitySettingsSchema} from '@relay/schema/src/gen/orvix/user/preferences/v1/accessibility_pb';
 import {
 	FavoriteGifSettingsSchema,
 	SoundSettingsSchema,
-} from '@fluxer/schema/src/gen/fluxer/user/preferences/v1/pickers_pb';
+} from '@relay/schema/src/gen/orvix/user/preferences/v1/pickers_pb';
 import {
 	ChatInputSettingsSchema,
 	DoubleTapAction,
 	ReactionEmojiSchema,
 	SwipeAction,
-} from '@fluxer/schema/src/gen/fluxer/user/preferences/v1/preferences_pb';
+} from '@relay/schema/src/gen/orvix/user/preferences/v1/preferences_pb';
 import {describe, expect, it} from 'vitest';
 
 describe('SyncedPreferencesCodec', () => {

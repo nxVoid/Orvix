@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {MAX_GROUP_DM_OTHER_RECIPIENTS, MAX_GUILDS_PREMIUM} from '@fluxer/constants/src/LimitConstants';
-import {StatusTypes} from '@fluxer/constants/src/StatusConstants';
+import {MAX_GROUP_DM_OTHER_RECIPIENTS, MAX_GUILDS_PREMIUM} from '@relay/constants/src/LimitConstants';
+import {StatusTypes} from '@relay/constants/src/StatusConstants';
 import {
 	DEFAULT_GUILD_FOLDER_ICON,
 	FriendSourceFlags,
@@ -15,19 +15,19 @@ import {
 	ProfileFieldPrivacyFlags,
 	ProfileFieldPrivacyFlagsDescriptions,
 	ThemeTypes,
-} from '@fluxer/constants/src/UserConstants';
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import {SudoVerificationSchema} from '@fluxer/schema/src/domains/auth/AuthSchemas';
-import {HiddenProfileBadgesType} from '@fluxer/schema/src/domains/user/ProfileBadgeSchemas';
+} from '@relay/constants/src/UserConstants';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
+import {SudoVerificationSchema} from '@relay/schema/src/domains/auth/AuthSchemas';
+import {HiddenProfileBadgesType} from '@relay/schema/src/domains/user/ProfileBadgeSchemas';
 import {
 	isValidSyncedPreferencesEncoding,
 	SYNCED_PREFERENCES_MAX_ENCODED_LENGTH,
-} from '@fluxer/schema/src/domains/user/SyncedPreferencesCodec';
-import {withBase64Binary} from '@fluxer/schema/src/primitives/Base64BinaryFields';
-import {isValidSingleUnicodeEmoji} from '@fluxer/schema/src/primitives/EmojiValidators';
-import {createBase64ImageType} from '@fluxer/schema/src/primitives/FileValidators';
-import {LocaleSchema} from '@fluxer/schema/src/primitives/LocaleSchema';
-import {createQueryIntegerType, DateTimeType, QueryBooleanType} from '@fluxer/schema/src/primitives/QueryValidators';
+} from '@relay/schema/src/domains/user/SyncedPreferencesCodec';
+import {withBase64Binary} from '@relay/schema/src/primitives/Base64BinaryFields';
+import {isValidSingleUnicodeEmoji} from '@relay/schema/src/primitives/EmojiValidators';
+import {createBase64ImageType} from '@relay/schema/src/primitives/FileValidators';
+import {LocaleSchema} from '@relay/schema/src/primitives/LocaleSchema';
+import {createQueryIntegerType, DateTimeType, QueryBooleanType} from '@relay/schema/src/primitives/QueryValidators';
 import {
 	ColorType,
 	createBitflagInt32Type,
@@ -38,8 +38,8 @@ import {
 	SnowflakeType,
 	withFieldDescription,
 	withOpenApiType,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {URLType} from '@fluxer/schema/src/primitives/UrlValidators';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {URLType} from '@relay/schema/src/primitives/UrlValidators';
 import {
 	GuildFolderIconSchema,
 	MentionReplyPreferencesSchema,
@@ -51,14 +51,14 @@ import {
 	StickerAnimationOptionsSchema,
 	TimeFormatTypesSchema,
 	UserNotificationSettingsSchema,
-} from '@fluxer/schema/src/primitives/UserSettingsValidators';
+} from '@relay/schema/src/primitives/UserSettingsValidators';
 import {
 	DiscriminatorType,
 	EmailType,
 	GlobalNameType,
 	PasswordType,
 	UsernameType,
-} from '@fluxer/schema/src/primitives/UserValidators';
+} from '@relay/schema/src/primitives/UserValidators';
 import {z} from 'zod';
 
 export const UserUpdateRequest = z

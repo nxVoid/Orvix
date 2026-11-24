@@ -1,0 +1,67 @@
+{
+	"name": "relay_desktop",
+	"version": "0.0.0",
+	"description": "Relay — community, messaging, voice and video communication",
+	"homepage": "https://fluxer.com",
+	"author": "Fluxer Platform AB <support@fluxer.com>",
+	"license": "AGPL-3.0-or-later",
+	"private": true,
+	"type": "module",
+	"main": "dist/main/index.js",
+	"scripts": {
+		"build": "node scripts/build.mjs",
+		"generate:windows-badges": "electron scripts/generate-windows-badges.mjs",
+		"set-channel": "../tools/ci/run.sh build-desktop --step set_build_channel",
+		"typecheck": "pnpm set-channel && tsc --noEmit"
+	},
+	"dependencies": {
+		"@relay/constants": "workspace:*",
+		"@relay/desktop_ipc": "workspace:*",
+		"@relay/instance_bootstrap": "workspace:*",
+		"@relay/ip_utils": "workspace:*",
+		"@relay/record_utils": "workspace:*",
+		"@relay/voice_engine_v2": "workspace:*",
+		"@simplewebauthn/browser": "catalog:",
+		"franc-min": "6.2.0",
+		"hunspell-asm": "4.0.2",
+		"undici": "catalog:",
+		"velopack": "1.2.0"
+	},
+	"devDependencies": {
+		"@types/node": "24.19.2",
+		"electron": "44.10.0",
+		"electron-builder": "27.0.0-alpha.8",
+		"esbuild": "catalog:",
+		"typescript": "catalog:ts7"
+	},
+	"knip": {
+		"ignoreDependencies": [
+			"electron-builder"
+		]
+	},
+	"optionalDependencies": {
+		"@relay/app-store": "file:./native/app-store",
+		"@relay/gateway-socket": "file:./native/gateway-socket",
+		"@relay/hardware-encoder": "file:./native/hardware-encoder",
+		"@relay/linux-audio-capture": "file:./native/linux-audio-capture",
+		"@relay/linux-evdev": "file:./native/linux-evdev",
+		"@relay/linux-input-hook": "file:./native/linux-input-hook",
+		"@relay/linux-notifications": "file:./native/linux-notifications",
+		"@relay/linux-portals": "file:./native/linux-portals",
+		"@relay/mac-app-audio": "file:./native/mac-app-audio",
+		"@relay/mac-clipboard": "file:./native/mac-clipboard",
+		"@relay/mac-screen-capture": "file:./native/mac-screen-capture",
+		"@relay/mac-sysctl": "file:./native/mac-sysctl",
+		"@relay/mac-tcc": "file:./native/mac-tcc",
+		"@relay/macos-input-hook": "file:./native/macos-input-hook",
+		"@relay/platform-info": "file:./native/platform-info",
+		"@relay/system-hunspell": "file:./native/system-hunspell",
+		"@relay/webauthn": "file:./native/webauthn",
+		"@relay/win-clipboard": "file:./native/win-clipboard",
+		"@relay/win-game-capture": "file:./native/win-game-capture",
+		"@relay/win-process-loopback": "file:./native/win-process-loopback",
+		"@relay/win-shell": "file:./native/win-shell",
+		"@relay/windows-input-hook": "file:./native/windows-input-hook",
+		"electron-log": "5.4.4"
+	}
+}

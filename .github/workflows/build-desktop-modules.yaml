@@ -12,7 +12,7 @@ on:
           - stable
         default: canary
       build_version:
-        description: Explicit Fluxer CalVer build version (YYYY.MDD.MICRO, UTC HHMMSS without leading zeroes) to use instead of automatic UTC clock allocation.
+        description: Explicit Orvix CalVer build version (YYYY.MDD.MICRO, UTC HHMMSS without leading zeroes) to use instead of automatic UTC clock allocation.
         required: false
         default: ""
         type: string
@@ -65,10 +65,10 @@ jobs:
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
-          repositories: fluxer
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
+          repositories: orvix
           permission-contents: read
       - name: Set metadata
         id: meta
@@ -152,25 +152,25 @@ jobs:
             ${{ runner.os }}-shared-renderer-cargo-registry-
 
       - name: Install dependencies
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step install_dependencies
 
       - name: Update version
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step update_version
 
       - name: Set build channel
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step set_build_channel
 
       - name: Build shared renderer assets
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step build_shared_assets
@@ -250,10 +250,10 @@ jobs:
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
-          repositories: fluxer
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
+          repositories: orvix
           permission-contents: read
       - name: Check which shells run these modules
         env:
@@ -277,7 +277,7 @@ jobs:
       - name: Upload GitHub release assets
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fluxer-desktop-modules-release-assets
+          name: orvix-desktop-modules-release-assets
           path: release_assets
           if-no-files-found: error
           retention-days: 1
@@ -310,17 +310,17 @@ jobs:
       - name: Download GitHub release assets
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: fluxer-desktop-modules-release-assets
+          name: orvix-desktop-modules-release-assets
           path: release_assets
 
       - name: Create token
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
-          repositories: fluxer
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
+          repositories: orvix
           permission-contents: write
       - name: Publish GitHub modules-only release
         env:
@@ -331,7 +331,7 @@ jobs:
           set -euo pipefail
           release_args=(
             release publish
-            --component "fluxer-desktop-${BUILD_CHANNEL}"
+            --component "orvix-desktop-${BUILD_CHANNEL}"
             --build-version "${BUILD_VERSION}"
             --source-sha "${SOURCE_SHA}"
             --previous-sha "${RELEASE_BASELINE_SHA}"

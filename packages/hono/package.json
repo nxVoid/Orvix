@@ -1,5 +1,5 @@
 {
-	"name": "@fluxer/hono",
+	"name": "@relay/hono",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -11,9 +11,9 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@fluxer/constants": "workspace:*",
-		"@fluxer/errors": "workspace:*",
-		"@fluxer/ip_utils": "workspace:*",
+		"@relay/constants": "workspace:*",
+		"@relay/errors": "workspace:*",
+		"@relay/ip_utils": "workspace:*",
 		"@hono/node-server": "catalog:",
 		"hono": "catalog:"
 	},

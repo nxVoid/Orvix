@@ -1,0 +1,73 @@
+{
+  "token": "1569143898905772032.OoPXf8-Fmy3rVOjKA-hUh645g46g3NbgC7Rxx4RcLw0",
+  "instanceUrl": "http://host.docker.internal:8088",
+  "prefix": "!",
+  "embedColor": "0x00e676",
+  "owners": [],
+  "mysql": {
+    "host": "mysql",
+    "port": 3306,
+    "user": "remix",
+    "password": "remix_pw",
+    "database": "remix",
+    "connectionLimit": 15
+  },
+  "nodelink": {
+    "host": "nodelink",
+    "port": 3000,
+    "password": "youshallnotpass",
+    "requestTimeout": 60000
+  },
+  "audio": {
+    "allowLoadstream": false
+  },
+  "bilibili": {
+    "enabled": false
+  },
+  "dashboard": {
+    "enabled": false,
+    "redis": {
+      "url": "redis://redis:6379"
+    }
+  },
+  "logging": {
+    "enabled": true,
+    "warn": true,
+    "player": true,
+    "inactivity": false,
+    "aloneCheck": false,
+    "voice247": true,
+    "voiceState": false,
+    "voice": false,
+    "mediaplayer": false,
+    "commands": true,
+    "guild": true,
+    "recovery": true,
+    "settings": true,
+    "lavalink": true,
+    "dashboard": false,
+    "redis": false
+  },
+  "timers": {
+    "inactivityTimeout": 180000,
+    "aloneCheckInterval": 30000,
+    "aloneCheckDebounce": 500,
+    "rejoin247Delay": 3000,
+    "leave247RejoinDelay": 5000,
+    "intentionalLeaveTTL": 10000
+  },
+  "presenceInterval": 30000,
+  "presenceContents": [
+    {
+      "text": "!play <şarkı> | Relay Music",
+      "activity": {
+        "name": "Relay Music",
+        "type": 2
+      }
+    }
+  ],
+  "fluxer.js": {
+    "timeout": 30000,
+    "retries": 3
+  }
+}

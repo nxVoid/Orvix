@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {ChannelTypes} from '@fluxer/constants/src/ChannelConstants';
-import {CONTENT_WARNING_TEXT_MAX_LENGTH} from '@fluxer/constants/src/GuildConstants';
+import {ChannelTypes} from '@relay/constants/src/ChannelConstants';
+import {CONTENT_WARNING_TEXT_MAX_LENGTH} from '@relay/constants/src/GuildConstants';
 import {
 	CHANNEL_RATE_LIMIT_PER_USER_MAX,
 	CHANNEL_RATE_LIMIT_PER_USER_MIN,
@@ -16,26 +16,26 @@ import {
 	VOICE_CHANNEL_CONNECTION_LIMIT_MIN,
 	VOICE_CHANNEL_USER_LIMIT_MAX,
 	VOICE_CHANNEL_USER_LIMIT_MIN,
-} from '@fluxer/constants/src/LimitConstants';
+} from '@relay/constants/src/LimitConstants';
 import {
 	THREAD_NAME_MAX_LENGTH,
 	THREAD_NAME_MIN_LENGTH,
 	THREAD_RATE_LIMIT_PER_USER_MAX,
-} from '@fluxer/constants/src/ThreadConstants';
-import {ChannelNicknameOverrides} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
+} from '@relay/constants/src/ThreadConstants';
+import {ChannelNicknameOverrides} from '@relay/schema/src/domains/channel/ChannelSchemas';
 import {
 	ForumChannelRequestFields,
 	ForumLayoutSchema,
 	ThreadAppliedTagsRequestFields,
 	ThreadParentDefaultsRequestFields,
-} from '@fluxer/schema/src/domains/channel/ForumRequestSchemas';
-import {ThreadAutoArchiveDurationSchema} from '@fluxer/schema/src/domains/channel/ThreadRequestSchemas';
-import {ReadStateResponse} from '@fluxer/schema/src/domains/gateway/GatewaySchemas';
-import {withBase64Binary} from '@fluxer/schema/src/primitives/Base64BinaryFields';
-import {ChannelOverwriteTypeSchema, GeneralChannelNameType} from '@fluxer/schema/src/primitives/ChannelValidators';
-import {createBase64ImageType} from '@fluxer/schema/src/primitives/FileValidators';
-import {ContentWarningLevelSchema} from '@fluxer/schema/src/primitives/GuildValidators';
-import {QueryBooleanType} from '@fluxer/schema/src/primitives/QueryValidators';
+} from '@relay/schema/src/domains/channel/ForumRequestSchemas';
+import {ThreadAutoArchiveDurationSchema} from '@relay/schema/src/domains/channel/ThreadRequestSchemas';
+import {ReadStateResponse} from '@relay/schema/src/domains/gateway/GatewaySchemas';
+import {withBase64Binary} from '@relay/schema/src/primitives/Base64BinaryFields';
+import {ChannelOverwriteTypeSchema, GeneralChannelNameType} from '@relay/schema/src/primitives/ChannelValidators';
+import {createBase64ImageType} from '@relay/schema/src/primitives/FileValidators';
+import {ContentWarningLevelSchema} from '@relay/schema/src/primitives/GuildValidators';
+import {QueryBooleanType} from '@relay/schema/src/primitives/QueryValidators';
 import {
 	createNamedLiteral,
 	createNamedLiteralUnion,
@@ -43,9 +43,9 @@ import {
 	Int32Type,
 	SnowflakeType,
 	UnsignedInt64Type,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {URLType} from '@fluxer/schema/src/primitives/UrlValidators';
-import {withSchemaMetadata} from '@fluxer/schema/src/SchemaMetadata';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {URLType} from '@relay/schema/src/primitives/UrlValidators';
+import {withSchemaMetadata} from '@relay/schema/src/SchemaMetadata';
 import {z} from 'zod';
 
 const ChannelOverwriteRequest = z.object({

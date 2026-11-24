@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type {OpenAPIResponse, OpenAPISchema} from '@fluxer/openapi/src/OpenAPITypes';
-import {ErrorResponse, ThrottledErrorResponse} from '@fluxer/schema/src/domains/common/ErrorSchemas';
+import type {OpenAPIResponse, OpenAPISchema} from '@relay/openapi/src/OpenAPITypes';
+import {ErrorResponse, ThrottledErrorResponse} from '@relay/schema/src/domains/common/ErrorSchemas';
 import {z} from 'zod';
 
 function toErrorSchema(schema: z.ZodType): OpenAPISchema {

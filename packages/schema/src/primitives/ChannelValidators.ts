@@ -4,8 +4,8 @@ import {
 	ChannelOverwriteTypes,
 	ChannelOverwriteTypesDescriptions,
 	ChannelTypes,
-} from '@fluxer/constants/src/ChannelConstants';
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
+} from '@relay/constants/src/ChannelConstants';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
 import {
 	createInt32EnumType,
 	createNamedLiteralUnion,
@@ -15,7 +15,7 @@ import {
 	stripInvisibles,
 	withOpenApiType,
 	withStringLengthRangeValidation,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 export const ChannelTypeSchema = createInt32EnumType(

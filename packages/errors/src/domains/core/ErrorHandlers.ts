@@ -1,8 +1,8 @@
-import {isObjectLike as isRecord} from '@fluxer/record_utils/src/RecordGuards';
+import {isObjectLike as isRecord} from '@relay/record_utils/src/RecordGuards';
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
-import {OAuth2Error} from '@fluxer/errors/src/domains/auth/OAuth2Error';
+import {APIErrorCodes} from '@relay/constants/src/ApiErrorCodes';
+import {OAuth2Error} from '@relay/errors/src/domains/auth/OAuth2Error';
 import {
 	getApiErrorCodeForStatus,
 	getErrorRecord,
@@ -13,15 +13,15 @@ import {
 	resolveErrorMessage,
 	resolveErrorStatus,
 	resolveMessageVariables,
-} from '@fluxer/errors/src/error_handling/ErrorIntrospection';
-import {createJsonErrorResponse} from '@fluxer/errors/src/error_handling/ErrorResponse';
-import {resolveRoutePattern} from '@fluxer/errors/src/error_handling/RoutePattern';
-import {FluxerError} from '@fluxer/errors/src/FluxerError';
-import {ErrorCodeToI18nKey} from '@fluxer/errors/src/i18n/ErrorCodeMappings';
-import {getErrorMessageUnsafe} from '@fluxer/errors/src/i18n/ErrorI18n';
-import type {ErrorI18nKey} from '@fluxer/errors/src/i18n/ErrorI18nMessages';
-import {parseAcceptLanguage} from '@fluxer/i18n/src/locale/resolution/AcceptLanguageNegotiation';
-import {createLogger} from '@fluxer/logger/src/Logger';
+} from '@relay/errors/src/error_handling/ErrorIntrospection';
+import {createJsonErrorResponse} from '@relay/errors/src/error_handling/ErrorResponse';
+import {resolveRoutePattern} from '@relay/errors/src/error_handling/RoutePattern';
+import {ErrorCodeToI18nKey} from '@relay/errors/src/i18n/ErrorCodeMappings';
+import {getErrorMessageUnsafe} from '@relay/errors/src/i18n/ErrorI18n';
+import type {ErrorI18nKey} from '@relay/errors/src/i18n/ErrorI18nMessages';
+import {RelayError} from '@relay/errors/src/RelayError';
+import {parseAcceptLanguage} from '@relay/i18n/src/locale/resolution/AcceptLanguageNegotiation';
+import {createLogger} from '@relay/logger/src/Logger';
 import type {Context} from 'hono';
 import {HTTPException} from 'hono/http-exception';
 
@@ -147,7 +147,7 @@ function handleLocalizedValidationErrors<E extends BaseHonoEnv>(err: unknown, ct
 	}
 }
 
-function handleFluxerError<E extends BaseHonoEnv>(err: FluxerError, ctx: Context<E>): Response {
+function handleRelayError<E extends BaseHonoEnv>(err: RelayError, ctx: Context<E>): Response {
 	const localizedResponse = handleLocalizedValidationErrors(err, ctx);
 	if (localizedResponse) {
 		return localizedResponse;
@@ -237,8 +237,8 @@ function resolveErrorResponse<E extends BaseHonoEnv>(err: Error, ctx: Context<E>
 	if (err instanceof OAuth2Error) {
 		return {response: err.getResponse(), unexpected: false};
 	}
-	if (err instanceof FluxerError) {
-		return {response: handleFluxerError(err, ctx), unexpected: false};
+	if (err instanceof RelayError) {
+		return {response: handleRelayError(err, ctx), unexpected: false};
 	}
 	const errorCode = resolveApiErrorCode(err);
 	if (errorCode) {

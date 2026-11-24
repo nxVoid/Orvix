@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {canonicalizeIpAddress} from '@fluxer/ip_utils/src/IpAddress';
+import {canonicalizeIpAddress} from '@relay/ip_utils/src/IpAddress';
 
 interface ClientIpExtractionOptions {
 	trustClientIpHeader?: boolean;

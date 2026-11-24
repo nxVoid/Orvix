@@ -8,7 +8,7 @@
 
 /.claude/
 /.direnv/
-/.fluxer/
+/.orvix/
 /.pnpm-store/
 /.vscode/
 
@@ -24,18 +24,18 @@
 **/target/
 **/test-results.json
 
-/fluxer_app/.devserver-cache.json
-/fluxer_app/pkgs/libfluxcore/
-/fluxer_app/pkgs/libfluxwebp/
-/fluxer_app/src/features/i18n/locales/*/messages.mjs
-/fluxer_app/src/features/messaging/utils/markdown/parser/MarkdownParserWasmBytes.ts
-/fluxer_app/src/features/theme/styles/generated/
-/fluxer_app/src/features/ui/components/SVGMasks.tsx
-/fluxer_app/src/features/ui/constants/AvatarStatusGeometry.ts
-/fluxer_gateway/priv/
-/fluxer_static/desktop/spellcheck/dictionaries/*/*
-!/fluxer_static/desktop/spellcheck/dictionaries/dictionary-et@2.0.0/LICENSE
-!/fluxer_static/desktop/spellcheck/dictionaries/dictionary-eu@4.0.0/LICENSE
+/relay_app/.devserver-cache.json
+/relay_app/pkgs/libfluxcore/
+/relay_app/pkgs/libfluxwebp/
+/relay_app/src/features/i18n/locales/*/messages.mjs
+/relay_app/src/features/messaging/utils/markdown/parser/MarkdownParserWasmBytes.ts
+/relay_app/src/features/theme/styles/generated/
+/relay_app/src/features/ui/components/SVGMasks.tsx
+/relay_app/src/features/ui/constants/AvatarStatusGeometry.ts
+/relay_gateway/priv/
+/relay_static/desktop/spellcheck/dictionaries/*/*
+!/relay_static/desktop/spellcheck/dictionaries/dictionary-et@2.0.0/LICENSE
+!/relay_static/desktop/spellcheck/dictionaries/dictionary-eu@4.0.0/LICENSE
 
 /packages/markdown_parser/rust/fuzz/artifacts/
 /packages/markdown_parser/rust/fuzz/corpus/
@@ -60,3 +60,19 @@
 
 **/.DS_Store
 **/Thumbs.db
+
+# Isolated migration, rollback snapshots and local build artifacts
+.orvix-migration/
+artifacts/
+.fluxer/
+/.relay/
+/.codex/
+/.agents/
+/.aws/
+**/*.backup
+
+# Secrets and local credentials
+/services/relay-music-bot/config.json
+
+# Mobile client repository (tracked separately at nxVoid/relay-flutter)
+/relay_mobile/

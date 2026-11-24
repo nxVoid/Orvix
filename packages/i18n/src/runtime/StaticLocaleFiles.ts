@@ -2,7 +2,7 @@
 
 import {readFileSync} from 'node:fs';
 
-declare const FLUXER_BUNDLED_LOCALES_DIR: string | undefined;
+declare const ORVIX_BUNDLED_LOCALES_DIR: string | undefined;
 
 export const STATIC_I18N_LOCALES = [
 	'ar',
@@ -43,8 +43,8 @@ export const STATIC_I18N_LOCALES = [
 export type StaticI18nLocale = (typeof STATIC_I18N_LOCALES)[number];
 
 function catalogDirectory(catalog: string, sourceDirectory: URL): URL {
-	if (typeof FLUXER_BUNDLED_LOCALES_DIR === 'string') {
-		return new URL(`${FLUXER_BUNDLED_LOCALES_DIR}${catalog}/`, import.meta.url);
+	if (typeof ORVIX_BUNDLED_LOCALES_DIR === 'string') {
+		return new URL(`${ORVIX_BUNDLED_LOCALES_DIR}${catalog}/`, import.meta.url);
 	}
 	return sourceDirectory;
 }

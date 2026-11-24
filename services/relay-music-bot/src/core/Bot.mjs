@@ -1,0 +1,914 @@
+/**
+ * @module src/core/Bot
+ * @description The Remix bot class: config loading, client construction,
+ * service wiring (settings, commands, players, gateway, dashboard, Last.fm,
+ * FluxerList, track options), presence rotation, alone-check loop, and
+ * WebSocket error guards. Channel/voice operations live in BotVoiceMixin.
+ */
+
+import * as fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import childProcess from "node:child_process";
+import { Client, Events } from "@fluxerjs/core";
+import { getVoiceManager } from "@fluxerjs/voice";
+import { initLogger, logger, _wsErrorCooldown } from "./Logger.mjs";
+import { Locale } from "./Locale.mjs";
+import { CommandHandler, CommandLoader, PrefixManager } from "../commands/index.mjs";
+import { MessageHandler, HelpCommand, setGlobalColor } from "../ui/index.mjs";
+import { cleanId } from "../utils/Utils.mjs";
+import { resolveIsBotUser } from "../voice/VoiceStateResolver.mjs";
+import * as ShardingUtils from "../utils/ShardingUtils.mjs";
+import { RemoteSettingsManager } from "../db/Settings.mjs";
+import { PlayerStateStore } from "../db/PlayerStateStore.mjs";
+import { RedisManager } from "../db/RedisManager.mjs";
+import { getSharedMysqlPool, getSharedPromisePool, closeSharedMysqlPool } from "../db/PoolManager.mjs";
+import { PlayerManager } from "../music/PlayerManager.mjs";
+import { LavalinkManager } from "../music/LavalinkManager.mjs";
+import { Dashboard } from "../dashboard/Dashboard.mjs";
+import { VoiceStateCache } from "../voice/VoiceStateCache.mjs";
+import { GatewayHandler } from "../voice/gateway/GatewayHandler.mjs";
+import { LastFmManager } from "../services/lastfm/LastFmManager.mjs";
+import { FluxerListManager } from "../services/FluxerListManager.mjs";
+import { TrackOptionsManager } from "../services/TrackOptionsManager.mjs";
+import { StatusChannelManager } from "../services/StatusChannelManager.mjs";
+import { TrackStats } from "../music/TrackStats.mjs";
+import { configureBilibili } from "../music/bilibili/index.mjs";
+import { configureAudio } from "../music/audio/AudioSettings.mjs";
+import { applyMixins } from "../utils/mixins.mjs";
+import BotVoiceMixin from "./BotVoiceMixin.mjs";
+
+/**
+ * Create a Map-like view object that proxies bot voice-state lookups through
+ * the VoiceStateCache's bot-specific methods.
+ * @param {VoiceStateCache} voiceCache
+ * @returns {Map}
+ */
+function createBotView(voiceCache) {
+  return {
+    get size()            { return voiceCache.botLocations.size; },
+    get(key)              { return voiceCache.botLocations.get(key); },
+    set(key, val)         { return voiceCache.setBotUser(key, val); },
+    has(key)              { return voiceCache.botLocations.has(key); },
+    delete(key)           { return voiceCache.deleteBotUser(key); },
+    forEach(fn)           { for (const [k, v] of voiceCache.iterateBotUsers()) fn(v, k, this); },
+    *[Symbol.iterator]()  { yield* voiceCache.iterateBotUsers(); },
+    *entries()            { yield* voiceCache.iterateBotUsers(); },
+    *keys()               { for (const [k] of voiceCache.iterateBotUsers()) yield k; },
+    *values()             { for (const [, v] of voiceCache.iterateBotUsers()) yield v; },
+    get observedVoiceBotsSize() { return voiceCache.botLocations.size; },
+  };
+}
+
+/**
+ * Build a runtime presence update payload from a config entry (string or
+ * object with text/emoji/activity).
+ * @param {string|object} entry
+ * @returns {object}
+ */
+function buildRuntimePresence(entry) {
+  const isObj = typeof entry === "object" && entry !== null;
+  const customStatus = {};
+  if (isObj) {
+    if (entry.text)       customStatus.text     = entry.text;
+    if (entry.emoji_name) customStatus.emojiName = entry.emoji_name;
+    if (entry.emoji_id)   customStatus.emojiId   = entry.emoji_id;
+  } else {
+    customStatus.text = String(entry);
+  }
+
+  const update = { status: "online", afk: false, customStatus };
+
+  if (isObj && entry.activity) {
+    update.activities = [{
+      name: entry.activity.name ?? "music",
+      type: entry.activity.type ?? 0,
+      url:  entry.activity.url  ?? undefined,
+    }];
+  }
+
+  return update;
+}
+
+/**
+ * @class Remix
+ * @description Main bot class. Orchestrates client, settings, players,
+ * lavalink, gateway events, commands, and 24/7 voice channel management.
+ */
+class Remix {
+  /**
+   * Bootstrap the entire bot: load config, create the Fluxer client,
+   * initialise settings/commands/players/dashboard, set up event handlers,
+   * load modules, and log in.
+   */
+  constructor() {
+    let config;
+    try {
+      config = JSON.parse(fs.readFileSync("config.json", "utf8"));
+    } catch (e) {
+      const reason = e.code === "ENOENT"
+          ? "config.json not found. Copy config_example.json → config.json and fill in your values."
+          : `config.json is malformed JSON: ${e.message}`;
+      console.error(`[Startup] FATAL: ${reason}`);
+      process.exit(1);
+    }
+    const REQUIRED_KEYS = ["token", "mysql"];
+    for (const key of REQUIRED_KEYS) {
+      if (config[key] == null) {
+        console.error(`[Startup] FATAL: config.json is missing required key "${key}".`);
+        process.exit(1);
+      }
+    }
+    this.config = config;
+
+    setGlobalColor(config.embedColor);
+
+    configureBilibili({
+      enabled:       config.bilibili?.enabled !== false,
+      bind:          config.bilibili?.bind       ?? "127.0.0.1",
+      port:          config.bilibili?.port       ?? 0,
+      advertiseHost: config.bilibili?.advertiseHost ?? null,
+      remoteProxy:   config.bilibili?.remoteProxy   ?? null,
+      remoteSecret:  config.bilibili?.remoteSecret  ?? null,
+    });
+
+    configureAudio({
+      allowLoadstream: config.audio?.allowLoadstream ?? false,
+    });
+
+    this.locale = new Locale(typeof config.prefix === "string" && config.prefix ? config.prefix : "%");
+    this.locale.load();
+
+    // Centralized MySQL connection pool (Issue #21)
+    const sharedPool = getSharedMysqlPool(config.mysql);
+    const sharedPromisePool = getSharedPromisePool(config.mysql);
+
+    TrackStats.setPool(sharedPromisePool);
+
+    const redisConfig = config.redis ?? (config.dashboard?.enabled ? config.dashboard?.redis : null);
+    this.redis = new RedisManager(this, redisConfig);
+    if (this.redis.enabled) {
+      this.redis.connect().catch((err) => {
+        logger.warn("[Redis] Startup connection error:", err?.message);
+      });
+      TrackStats.setRedis(this.redis);
+    }
+
+    this.dashboard = new Dashboard(this, {
+      enabled: config.dashboard?.enabled,
+      redis: config.dashboard?.redis ?? (this.redis.enabled ? this.redis.config : null),
+      mysql: sharedPromisePool,
+    });
+    if (!this.redis.enabled && this.dashboard?.redis) {
+      TrackStats.setRedis(this.dashboard.redis);
+    }
+
+    const presenceContents = config.presenceContents ?? [];
+    const presenceInterval = config.presenceInterval ?? 30_000;
+
+    let presenceRotationIndex = presenceContents.length > 1 ? 1 : 0;
+    let presenceRotationStarted = false;
+    let wsHandlerRearmStarted = false;
+
+    const timers = config.timers ?? {};
+    this.T = {
+      aloneCheckInterval:  timers.aloneCheckInterval  ?? 60_000,
+      aloneCheckDebounce:  timers.aloneCheckDebounce  ?? 500,
+      rejoin247Delay:      timers.rejoin247Delay       ?? 3_000,
+      leave247RejoinDelay: timers.leave247RejoinDelay  ?? 5_000,
+      intentionalLeaveTTL: timers.intentionalLeaveTTL  ?? 10_000,
+    };
+
+    const clientOptions = {
+      waitForGuilds: true,
+      cache: {
+        guilds: 10_000,
+        channels: 100_000,
+        users: 200_000,
+        members: 5_000,
+        messages: 20,
+      },
+      ...config["fluxer.js"],
+      presence: presenceContents.length === 0 ? undefined : buildRuntimePresence(presenceContents[0]),
+    };
+
+    const rawInstanceUrl = process.env.INSTANCE_URL || config.instanceUrl;
+    if (rawInstanceUrl) {
+      let url = String(rawInstanceUrl).trim().replace(/\/+$/, "");
+      if (url) {
+        if (!url.endsWith("/api")) {
+          url = `${url}/api`;
+        }
+        clientOptions.instance = { api: url };
+        logger.info(`[Startup] Self-hosted instance configured: ${url}`);
+      }
+    }
+
+    const client = new Client(clientOptions);
+
+    if (clientOptions.instance?.api && client.rest) {
+      const origGet = client.rest.get.bind(client.rest);
+      client.rest.get = async (route, options) => {
+        const res = await origGet(route, options);
+        if (route === "/gateway/bot" && res && typeof res === "object" && res.url) {
+          try {
+            const parsedApi = new URL(clientOptions.instance.api);
+            const parsedGw = new URL(res.url);
+            parsedGw.hostname = parsedApi.hostname;
+            if (parsedApi.port) {
+              parsedGw.port = parsedApi.port;
+            }
+            res.url = parsedGw.toString().replace(/\/+$/, "");
+            logger.info(`[Gateway] Adapted gateway URL for self-hosted instance: ${res.url}`);
+          } catch (e) {
+            logger.warn(`[Gateway] Failed to adapt gateway URL:`, e.message);
+          }
+        }
+        return res;
+      };
+    }
+
+    client.setMaxListeners(50);
+    this.client = client;
+
+    // Adapt VoiceServerUpdate endpoint for self-hosted instance LiveKit
+    client.prependListener(Events.VoiceServerUpdate, (data) => {
+      if (data && data.endpoint) {
+        let host = process.env.VOICE_HOST || config.voiceHost;
+        if (!host && (rawInstanceUrl || config.instanceUrl)) {
+          try {
+            host = new URL(rawInstanceUrl || config.instanceUrl).hostname;
+          } catch (_) {}
+        }
+        if (!host) host = "127.0.0.1";
+        const voicePort = process.env.VOICE_PORT || config.voicePort || 7880;
+        const oldEp = data.endpoint;
+        data.endpoint = `ws://${host}:${voicePort}`;
+        logger.info(`[Voice] Adapted VoiceServerUpdate endpoint from '${oldEp}' to '${data.endpoint}'`);
+      }
+    });
+
+    try {
+      getVoiceManager(client);
+      logger.player("[Startup] VoiceManager initialized before login.");
+    } catch (e) {
+      logger.warn("[Startup] VoiceManager pre-login init failed:", e.message);
+    }
+
+    const messages = new MessageHandler(this.client);
+    this.messages  = messages;
+
+    const settings    = new RemoteSettingsManager(sharedPool, "./storage/defaults.json");
+    this.settingsMgr  = settings;
+
+    this.playerState  = new PlayerStateStore(sharedPool);
+    if (this.redis?.enabled) {
+      this.playerState.setRedis(this.redis);
+    }
+
+    const configPrefix = config.prefix ?? null;
+    if (configPrefix && settings.defaults) {
+      settings.defaults.prefix = configPrefix;
+    }
+
+    this.locale.bind(this.settingsMgr);
+
+    const commands = new CommandHandler(messages, configPrefix);
+    this.handler   = commands;
+
+    const prefixMgr = new PrefixManager(settings, configPrefix);
+    commands.setPrefixManager(prefixMgr);
+    commands.setLocale(this.locale);
+    messages.setLocale(this.locale);
+    this.locale.setPrefixResolver((guildId) => commands.getPrefix(guildId));
+
+    new HelpCommand(commands, messages, (msg) => this.getSettings(msg)).register();
+
+    commands.onPing = (msg) => {
+      msg.replyEmbed(
+          this.handler.format(
+              "My prefix in this server is `$prefix`\n\nRun `$prefix$helpCmd` to get started!",
+              msg.message.guildId
+          ),
+          false,
+          {
+            icon_url: (msg.channel?.channel?.guild?.icon || msg.server?.icon)
+                ? `https://cdn.fluxer.app/icons/${msg.channel?.channel?.guild?.id ?? msg.server?.id}/${msg.channel?.channel?.guild?.icon ?? msg.server?.icon}.webp`
+                : null,
+            title:    msg.channel?.channel?.guild?.name ?? msg.server?.name ?? null,
+          }
+      );
+    };
+    commands.owners = config.owners ?? [];
+
+    this.lavalink = null;
+    let lavalinkInitialised = false;
+
+    this.voiceCache = new VoiceStateCache({ maxUsers: 50_000, maxBots: 10_000 });
+
+    this.observedVoiceUsers = this.voiceCache;
+    this.observedVoiceBots  = createBotView(this.voiceCache);
+
+    this._announcementChannelCache = new Map();
+    this._announcementChannelTTL  = 5 * 60 * 1000;
+    setInterval(() => {
+      const now = Date.now();
+      for (const [k, v] of this._announcementChannelCache) {
+        if (v.timestamp && now - v.timestamp > this._announcementChannelTTL) this._announcementChannelCache.delete(k);
+      }
+    }, 60_000);
+    this.intentionalLeaves = new Map();
+    /** Bot-level 24/7 rejoin timers (channelId → Timeout). Owned by Remix, not by Players. */
+    this._247RejoinTimers = new Map();
+
+    this.gatewayHandler = new GatewayHandler(this);
+    this.gatewayHandler.setupEventHandlers();
+
+    this.lastfm = new LastFmManager(config.lastfm, sharedPromisePool);
+    this.fluxerlist = new FluxerListManager(config.fluxerlist);
+    this.trackOptions = new TrackOptionsManager(sharedPool);
+    this.statusChannel = new StatusChannelManager(this, config.statusChannel);
+
+    /* Gateway activity timestamps and status tracking */
+    this._lastGatewayHeartbeat = Date.now();
+    this._lastGatewayDisconnect = 0;
+    this._gatewayConnected = false;
+
+    /* Event loop health heartbeat for Docker container healthcheck (Issue #12) */
+    const healthFile = path.join(os.tmpdir(), ".remix-health");
+    const updateHealth = () => {
+      try {
+        /* Only touch health file if gateway is healthy or still in initial boot */
+        const now = Date.now();
+        const silenceMs = this._hasBooted ? now - (this._lastGatewayHeartbeat || 0) : 0;
+        const disconnectedMs = (!this._gatewayConnected && this._hasBooted) ? (now - (this._lastGatewayDisconnect || now)) : 0;
+        if (silenceMs < 60_000 && disconnectedMs < 45_000) {
+          fs.writeFile(healthFile, now.toString(), () => {});
+        }
+      } catch (_) {}
+    };
+    updateHealth();
+    this._healthInterval = setInterval(updateHealth, 10_000);
+    this._healthInterval.unref?.();
+
+    /* Active gateway self-healing watchdog */
+    this._gatewayWatchdogInterval = setInterval(async () => {
+      if (!this._hasBooted) return;
+      const now = Date.now();
+      const silenceMs = now - (this._lastGatewayHeartbeat || 0);
+      const disconnectedMs = !this._gatewayConnected ? (now - (this._lastGatewayDisconnect || now)) : 0;
+
+      /* After 25s of silence or disconnection, actively trigger reconnect attempts on local shards */
+      if (!this._gatewayConnected || silenceMs >= 25_000) {
+        const shards = ShardingUtils.getLocalShards(this.client);
+        for (const [id, shard] of shards) {
+          try {
+            if (typeof shard.connect === "function") shard.connect();
+            else if (typeof shard.reconnect === "function") shard.reconnect();
+            else if (typeof shard.ws?.connect === "function") shard.ws.connect();
+          } catch (_) {}
+        }
+      }
+
+      /* After 60s of total gateway silence or 45s of persistent disconnection, restart to auto-recover */
+      if (silenceMs >= 60_000 || disconnectedMs >= 45_000) {
+        logger.error(`[GatewayWatchdog] Gateway unresponsive (silence=${Math.round(silenceMs / 1000)}s, disconnected=${Math.round(disconnectedMs / 1000)}s) — performing graceful restart to restore service.`);
+
+        /* Hard kill timer in case gracefulShutdown hangs on network or database locks */
+        const hardKillTimer = setTimeout(() => {
+          process.exit(1);
+        }, 5_000);
+        hardKillTimer.unref?.();
+
+        try {
+          await Promise.race([
+            this.gracefulShutdown(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("gracefulShutdown timed out")), 4_000))
+          ]);
+        } catch (_) {}
+        process.exit(1);
+      }
+    }, 10_000);
+    this._gatewayWatchdogInterval.unref?.();
+
+    // Direct process signal fallback handlers
+    process.once("SIGINT", () => {
+      this.gracefulShutdown().then(() => process.exit(0)).catch(() => process.exit(1));
+    });
+    process.once("SIGTERM", () => {
+      this.gracefulShutdown().then(() => process.exit(0)).catch(() => process.exit(1));
+    });
+
+    settings.on("ready", () => this._onSettingsReady());
+
+    client.on(Events.Ready, async () => {
+      try {
+        logger.player("Logged in as " + (client.user?.username ?? "bot"));
+        this._lastGatewayHeartbeat = Date.now();
+        this._gatewayConnected = true;
+        this._lastGatewayDisconnect = 0;
+
+        this._attachWsErrorHandlers();
+
+        if (!wsHandlerRearmStarted) {
+          wsHandlerRearmStarted = true;
+          setInterval(() => {
+            this._attachWsErrorHandlers();
+            this.gatewayHandler.attachRawListener();
+          }, 5_000).unref?.();
+        }
+
+        const botId = client.user?.id ?? "0";
+
+        await this.settingsMgr.setBotId(botId);
+        await this.lastfm.setBotId(botId);
+        this.playerState?.setBotId?.(botId);
+        this.dashboard.setBotId(botId);
+        this.trackOptions.setBotId(botId);
+
+        if (!lavalinkInitialised) {
+          lavalinkInitialised = true;
+          this.lavalink = new LavalinkManager(config.nodelink ?? {}, client, { id: botId, username: client.user?.username ?? "bot" });
+          this.lavalink.remix = this;
+          this.lavalink.on("ready", () => {
+            logger.lavalink("[Lavalink] Session ready");
+            this.statusChannel?.resolveIncident("audioNode");
+            if (this._hasBooted) {
+              this.players?.resumeAllOnNodeReconnect?.();
+            }
+          });
+          this.lavalink.on("nodeReconnect", () => {
+            this.statusChannel?.resolveIncident("audioNode");
+            if (this._hasBooted) {
+              this.players?.resumeAllOnNodeReconnect?.();
+            }
+          });
+          this.lavalink.on("nodeDisconnect", (node, reason) => {
+            this.statusChannel?.triggerIncident("audioNode", `Audio engine disconnected: ${reason || "Connection dropped"}`);
+          });
+          this.lavalink.on("nodeError", (node, err) => {
+            this.statusChannel?.triggerIncident("audioNode", `Audio engine error: ${err?.message || "Unreachable"}`);
+          });
+          await this.lavalink.init();
+          this.playerContext.lavalink = this.lavalink;
+        }
+
+        this.gatewayHandler.onReady();
+        this._hasBooted = true;
+        this.statusChannel?.start();
+        this.statusChannel?.resolveIncident("gateway");
+
+        this.fluxerlist?.startAutoStats?.(client);
+
+        if (!presenceRotationStarted && presenceContents.length > 1) {
+          presenceRotationStarted = true;
+          setInterval(() => {
+            try {
+              const entry = presenceContents[presenceRotationIndex % presenceContents.length];
+              client.user?.setPresence(buildRuntimePresence(entry));
+              presenceRotationIndex = (presenceRotationIndex + 1) % presenceContents.length;
+            } catch (e) {
+              logger.warn("[Presence] Rotation update failed:", e?.message);
+            }
+          }, presenceInterval).unref?.();
+        }
+      } catch (e) {
+        logger.error("[Ready] Fatal error in Ready handler:", e);
+      }
+    });
+
+    client._remix = this;
+
+    this.playerContext = {
+      client:   this.client,
+      config,
+      lavalink: null,
+    };
+    this.players = new PlayerManager(settings, commands, {
+      config,
+      player: this.playerContext,
+      dashboard: this.dashboard,
+      redis: this.redis,
+      locale: this.locale,
+      timers: this.T,
+      trackOptions: this.trackOptions,
+    });
+    this.players.observedVoiceUsers = this.observedVoiceUsers;
+    this.players.voiceCache = this.voiceCache;
+    this.players._lastfm = this.lastfm;
+
+    const ALONE_CHECK_INTERVAL = this.T.aloneCheckInterval;
+    setInterval(() => this._runAloneCheck(), ALONE_CHECK_INTERVAL);
+
+    this.players.checkVoiceChannels = (message) => this._checkVoiceChannelsImpl(message);
+
+    const __dirname = import.meta.dirname;
+    try {
+      this.comHash     = childProcess.execSync("git rev-parse --short HEAD", { cwd: __dirname, timeout: 3000 }).toString().trim();
+      this.comHashLong = childProcess.execSync("git rev-parse HEAD",         { cwd: __dirname, timeout: 3000 }).toString().trim();
+    } catch (e) {
+      logger.warn("[Git] comhash error:", e?.message);
+      this.comHash     = "Newest";
+      this.comHashLong = null;
+    }
+
+    this.comLink = "https://github.com/remix-bot/fluxer/commit/" + (this.comHashLong ?? "");
+
+    const loader    = new CommandLoader(commands, this);
+    const dir       = path.join(__dirname, "..", "..", "commands");
+    logger.commands("Started loading commands.");
+    loader.loadFromDir(dir)
+        .then(() => logger.commands("Commands loaded."))
+        .catch(e => logger.error("Failed to load commands:", e));
+
+    logger.commands("Loading Modules.");
+    this.loadedModules = new Map();
+    try {
+      this.modules = JSON.parse(fs.readFileSync("./storage/modules.json"));
+    } catch (e) {
+      const reason = e.code === "ENOENT"
+          ? "storage/modules.json not found."
+          : `storage/modules.json is malformed JSON: ${e.message}`;
+      console.error(`[Startup] WARN: ${reason} — starting with no modules.`);
+      this.modules = [];
+    }
+    Promise.allSettled(this.modules.map(async m => {
+      if (!m.enabled) return;
+      try {
+        const exported = await import(m.index);
+        const ModClass = exported.default;
+        this.loadedModules.set(m.name, { instance: new ModClass(this), c: ModClass });
+      } catch (e) {
+        logger.error(`[Module] Failed to load "${m.name}":`, e.message);
+      }
+    }))
+        .then(results => {
+          const succeeded = results.filter(r => r.status === "fulfilled").length;
+          const failed = results.length - succeeded;
+          logger.commands(`Modules loaded (${succeeded} succeeded, ${failed} failed).`);
+        });
+
+    const startLogin = async () => {
+      if (ShardingUtils.isShardedProcess()) {
+        try {
+          const { attachShardClientUtil } = await import("@fluxerjs/sharding");
+          this.shardUtil = attachShardClientUtil(client);
+          logger.player(
+            `[Startup] Sharding child attached — ${ShardingUtils.describeSharding(client)}.`
+          );
+        } catch (e) {
+   
+          logger.error(
+            "[Startup] FATAL: running under a ShardingManager but the sharding attach failed:",
+            e?.message
+          );
+          process.exit(1);
+        }
+      }
+      await client.login(config.token);
+      if (this.shardUtil) {
+        try { this.shardUtil.notifyReady(); }
+        catch (e) { logger.warn("[Startup] Sharding ready report failed:", e?.message); }
+      }
+    };
+    startLogin().catch(e => {
+      logger.error("[Startup] Login failed:", e?.message ?? e);
+      process.exit(1);
+    });
+  }
+
+  /**
+   * Settings-ready handler: initialise the logger and normalise stay_247
+   * values (single channel per guild, cleaned IDs).
+   * @private
+   */
+  _onSettingsReady() {
+    initLogger(this.config);
+    logger.settings("[settings] Loaded from DB.");
+    for (const [guildId, serverSettings] of this.settingsMgr.guilds) {
+      const val = serverSettings.get("stay_247");
+      if (!val || val === "none") continue;
+      const rawArr = Array.isArray(val) ? val : [val];
+      const cleaned = rawArr
+          .map(id => cleanId(id))
+          .filter(id => id.length >= 15 && id.length <= 22);
+
+      if (cleaned.length > 1) {
+        serverSettings.set("stay_247", cleaned.slice(0, 1));
+        logger.settings(
+          `[settings] Trimmed stay_247 for guild ${guildId}: had ${cleaned.length} channels, kept first 1.`
+        );
+        continue;
+      }
+
+      const needsSave = JSON.stringify(cleaned) !== JSON.stringify(val);
+      if (needsSave || !Array.isArray(val)) {
+        const newVal = cleaned.length > 0 ? cleaned : "none";
+        serverSettings.set("stay_247", newVal);
+        logger.settings(
+          `[settings] Cleaned stay_247 for guild ${guildId}: ${JSON.stringify(val)} → ${JSON.stringify(newVal)}`
+        );
+      }
+    }
+  }
+
+  /**
+   * Periodic alone-check: for every active player, when no humans remain in
+   * the channel, either arm the inactivity timer (music still queued) or
+   * emit autoleave.
+   * @private
+   */
+  _runAloneCheck() {
+    if (this.players.playerMap.size === 0) return;
+
+    for (const [mapKey, player] of this.players.playerMap) {
+      let channelId;
+      try {
+        if (player._destroyed || player._isJoining) continue;
+
+        const guildId = player._guildId;
+        if (!guildId) continue;
+
+        channelId   = player._channelId ?? mapKey;
+        const cleanChanId = cleanId(channelId);
+        if (!cleanChanId) continue;
+
+        const cleanGuildId = cleanId(guildId);
+
+        if (player._is247Enabled()) continue;
+
+        if (!player.connection) continue;
+
+        let hasHuman = this.voiceCache.hasHumansInChannel(cleanGuildId, cleanChanId);
+
+        if (!hasHuman) {
+          try {
+            const guild = this.client?.guilds?.get?.(cleanGuildId);
+            const voiceStates = guild?.voice_states ?? guild?.voiceStates;
+            if (voiceStates) {
+              const entries = Array.isArray(voiceStates)
+                  ? voiceStates
+                  : typeof voiceStates.values === "function"
+                      ? [...voiceStates.values()]
+                      : Object.values(voiceStates);
+              for (const state of entries) {
+                const stateChannel = cleanId(state?.channelId ?? state?.channel_id);
+                if (stateChannel === cleanChanId) {
+                  const stateUserId = state?.userId ?? state?.user_id ?? state?.id;
+                  const isBot = resolveIsBotUser({
+                    userId: stateUserId,
+                    member: state?.member,
+                    guild,
+                    client: this.client,
+                    botId:  this.client?.user?.id,
+                  });
+                  if (!isBot) {
+                    hasHuman = true;
+                    break;
+                  }
+                }
+              }
+            }
+          } catch(e) { logger.warn("[AloneCheck] Voice state check error:", e?.message); }
+        }
+
+        if (!hasHuman) {
+          try {
+            const room = player.connection?.room;
+            if (room?.isConnected && room.remoteParticipants && room.remoteParticipants.size > 0) {
+              hasHuman = true;
+            }
+          } catch(e) { logger.warn("[AloneCheck] LiveKit check error:", e?.message); }
+        }
+
+        if (!hasHuman && !player._paused) {
+          if (player.queue?.getCurrent() || !player.queue?.isEmpty()) {
+            player._startInactivityTimer?.();
+          } else {
+            player._stopInactivityTimer?.();
+            if (!player._stayInVoice) player.emit("autoleave");
+          }
+        } else if (hasHuman) {
+          player._stopInactivityTimer?.();
+        }
+      } catch (e) {
+        logger.warn("[AloneCheck] Error checking channel", channelId, e.message);
+      }
+    }
+  }
+
+  /**
+   * Attach proactive error handlers to WebSocket sockets/shards to prevent
+   * unhandled crashes from WebSocket transport errors. Re-armed periodically.
+   * @private
+   */
+  _attachWsErrorHandlers() {
+    try {
+      const wsManager = this.client?.ws;
+      if (!wsManager) return;
+
+      let attachedNew = false;
+
+      const logWsError = (label, err) => {
+        const now = Date.now();
+        if (now - _wsErrorCooldown.lastLogged < _wsErrorCooldown.COOLDOWN_MS) return;
+        _wsErrorCooldown.lastLogged = now;
+        logger.player(`[WS] ${label} transport error (auto-recovering): ${err?.message ?? err}`);
+      };
+
+      const attachToSocket = (wsObj, label) => {
+        if (!wsObj) return;
+        if (wsObj._fluxerErrorHandled) return;
+        wsObj._fluxerErrorHandled = true;
+        attachedNew = true;
+
+        if (typeof wsObj.on === "function") {
+          wsObj.on("error", (err) => logWsError(label, err));
+        }
+        if (typeof wsObj.addEventListener === "function") {
+          wsObj.addEventListener("error", (event) => {
+            if (typeof event.preventDefault === "function") event.preventDefault();
+            const err = event?.error ?? event?.message ?? event;
+            logWsError(label, err);
+          });
+        }
+      };
+
+      const attachToShard = (shard, id) => {
+        if (!shard) return;
+        if (shard._fluxerErrorHandled) return;
+        shard._fluxerErrorHandled = true;
+        attachedNew = true;
+        shard.on("error", (err) => logWsError(`Shard ${id}`, err));
+        if (typeof shard.on === "function") {
+          shard.on("disconnect", () => {
+            this._gatewayConnected = false;
+            if (!this._lastGatewayDisconnect) this._lastGatewayDisconnect = Date.now();
+          });
+          shard.on("resume", () => {
+            this._gatewayConnected = true;
+            this._lastGatewayHeartbeat = Date.now();
+            this._lastGatewayDisconnect = 0;
+          });
+          shard.on("ready", () => {
+            this._gatewayConnected = true;
+            this._lastGatewayHeartbeat = Date.now();
+            this._lastGatewayDisconnect = 0;
+          });
+        }
+        if (shard.ws) attachToSocket(shard.ws, `Shard ${id} socket`);
+      };
+
+      if (typeof this.client?.on === "function" && !this.client._fluxerShardEventsBound) {
+        this.client._fluxerShardEventsBound = true;
+        this.client.on("shardDisconnect", () => {
+          this._gatewayConnected = false;
+          if (!this._lastGatewayDisconnect) this._lastGatewayDisconnect = Date.now();
+        });
+        this.client.on("shardResume", () => {
+          this._gatewayConnected = true;
+          this._lastGatewayHeartbeat = Date.now();
+          this._lastGatewayDisconnect = 0;
+        });
+        this.client.on("shardReady", () => {
+          this._gatewayConnected = true;
+          this._lastGatewayHeartbeat = Date.now();
+          this._lastGatewayDisconnect = 0;
+        });
+      }
+
+      for (const [id, shard] of ShardingUtils.getLocalShards(this.client)) {
+        attachToShard(shard, id);
+      }
+
+      if (wsManager.ws) {
+        attachToSocket(wsManager.ws, "Gateway");
+      }
+
+      if (typeof wsManager.on === "function" && !wsManager._fluxerErrorHandled) {
+        wsManager._fluxerErrorHandled = true;
+        attachedNew = true;
+        wsManager.on("error", ({ shardId, error }) => {
+          logWsError(`WSManager (shard ${shardId})`, error);
+        });
+      }
+
+      if (typeof wsManager.on === "function" && !wsManager._shardCreateHandled) {
+        wsManager._shardCreateHandled = true;
+        attachedNew = true;
+        wsManager.on("shardCreate", (shard) => {
+          attachToShard(shard, shard.id ?? "?");
+        });
+      }
+
+      if (attachedNew) {
+        logger.player("[WS] Proactive error handlers attached to gateway sockets.");
+      }
+    } catch (e) {
+      logger.warn("[WS] Failed to attach WS error handlers:", e.message);
+    }
+  }
+
+  /**
+   * Graceful shutdown: flush player queue snapshots to MySQL (Issue #12),
+   * destroy players, close Lavalink, Redis, dashboard DB, settings, and pool.
+   * @async
+   * @returns {Promise<void>}
+   */
+  async gracefulShutdown() {
+    if (this._shuttingDown) return;
+    this._shuttingDown = true;
+    logger.recovery("\n[Shutdown] Cleaning up before exit...");
+
+    // 1. Flush active player queue snapshots to MySQL (Issue #12)
+    try {
+      if (this.playerState && this.players) {
+        await this.playerState.saveAllFrom(this.players);
+      }
+    } catch (e) {
+      logger.warn("[Shutdown] Player state save failed:", e?.message);
+    }
+
+    // 2. Destroy live players
+    try {
+      if (this.players?.playerMap) {
+        for (const [channelId, player] of this.players.playerMap) {
+          try { player.destroy(); } catch (e) { logger.warn("[Shutdown] Player destroy error:", e?.message); }
+        }
+        this.players.playerMap.clear();
+      }
+    } catch (e) {
+      logger.warn("[Shutdown] Player cleanup error:", e?.message);
+    }
+
+    // 3. Destroy Lavalink
+    try {
+      if (this.lavalink) {
+        this.lavalink.destroy();
+      }
+    } catch (e) {
+      logger.warn("[Shutdown] Lavalink cleanup error:", e?.message);
+    }
+
+    try {
+      TrackStats.save();
+    } catch (_) {}
+
+    /* 4. Close Redis */
+    try {
+      if (this.redis?.destroy) {
+        await this.redis.destroy();
+      } else if (this.dashboard?.redis?.destroy) {
+        await this.dashboard.redis.destroy();
+      }
+    } catch (e) {
+      logger.error("[Shutdown] Failed to close Redis:", e.message);
+    }
+
+    // 5. Close Dashboard DB if present
+    try {
+      if (this.dashboard?.db?.close) {
+        await this.dashboard.db.close();
+      }
+    } catch (e) {
+      logger.error("[Shutdown] Failed to close Dashboard DB:", e.message);
+    }
+
+    /* 6. Stop 24/7 watchdog and status channel */
+    try {
+      this.statusChannel?.destroy?.();
+      this.gatewayHandler?.stop247Watchdog?.();
+    } catch (e) {
+      logger.warn("[Shutdown] Watchdog stop error:", e?.message);
+    }
+
+    // 7. Flush pending settings writes
+    try {
+      if (this.settingsMgr?.shutdown) {
+        await this.settingsMgr.shutdown();
+      }
+    } catch (e) {
+      logger.error("[Shutdown] Settings flush failed:", e.message);
+    }
+
+    // 8. Close unified shared MySQL pool (Issue #21)
+    try {
+      await closeSharedMysqlPool();
+    } catch (e) {
+      logger.warn("[Shutdown] MySQL pool close failed:", e?.message);
+    }
+
+    /* 9. Clean up event-loop health heartbeat and gateway watchdog */
+    try {
+      if (this._gatewayWatchdogInterval) clearInterval(this._gatewayWatchdogInterval);
+      if (this._healthInterval) clearInterval(this._healthInterval);
+      const healthFile = path.join(os.tmpdir(), ".remix-health");
+      fs.unlink(healthFile, () => {});
+    } catch (_) {}
+  }
+}
+
+applyMixins(Remix, BotVoiceMixin);
+
+export { Remix };
+export default Remix;

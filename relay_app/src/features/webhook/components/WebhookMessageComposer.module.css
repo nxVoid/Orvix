@@ -1,0 +1,30 @@
+.composer {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-3);
+}
+.preview {
+	padding: var(--spacing-3);
+	background: var(--background-secondary);
+	border-radius: var(--radius-md);
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+.embed {
+	border-left: 4px solid;
+	padding: var(--spacing-3);
+	background: var(--background-tertiary);
+	border-radius: var(--radius-md);
+}
+.thumbnail {
+	float: right;
+	width: 64px;
+	height: 64px;
+	object-fit: contain;
+}
+.banner {
+	display: block;
+	max-width: 100%;
+	max-height: 240px;
+	object-fit: contain;
+}

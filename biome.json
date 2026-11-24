@@ -7,7 +7,7 @@
 		"lineWidth": 120,
 		"lineEnding": "lf",
 		"bracketSpacing": false,
-		"includes": ["**", "!**/fluxer_app/src/features/theme/variables/ThemeVariableManifest.ts"]
+		"includes": ["**", "!**/relay_app/src/features/theme/variables/ThemeVariableManifest.ts"]
 	},
 	"javascript": {
 		"formatter": {
@@ -132,11 +132,11 @@
 		{
 			"includes": [
 				"packages/**",
-				"fluxer_desktop/**",
-				"fluxer_docs/**",
-				"fluxer_api/**",
-				"fluxer_app/**",
-				"!fluxer_app/pkgs/livekit-client/**"
+				"relay_desktop/**",
+				"relay_docs/**",
+				"relay_api/**",
+				"relay_app/**",
+				"!relay_app/pkgs/livekit-client/**"
 			],
 			"linter": {"rules": {"style": {"noNestedTernary": "error"}}}
 		},
@@ -157,19 +157,19 @@
 			}
 		},
 		{
-			"includes": ["fluxer_app/src/**/*.tsx"],
+			"includes": ["relay_app/src/**/*.tsx"],
 			"plugins": ["./tools/lint/no-adjacent-jsx-text.grit"]
 		},
 		{
-			"includes": ["fluxer_app/src/features/i18n/components/AppI18nProvider.tsx"],
+			"includes": ["relay_app/src/features/i18n/components/AppI18nProvider.tsx"],
 			"linter": {"rules": {"style": {"noRestrictedImports": "off"}}}
 		},
 		{
-			"includes": ["fluxer_app/src/**/*.worklet.js"],
+			"includes": ["relay_app/src/**/*.worklet.js"],
 			"javascript": {"globals": ["AudioWorkletProcessor", "registerProcessor", "sampleRate", "currentTime"]}
 		},
 		{
-			"includes": ["fluxer_app/src/features/app/config/WebAppHostedImages.json"],
+			"includes": ["relay_app/src/features/app/config/WebAppHostedImages.json"],
 			"json": {"formatter": {"indentStyle": "space", "indentWidth": 2}}
 		},
 		{
@@ -189,12 +189,12 @@
 			"!**/.git",
 			"!**/app.css",
 			"!**/build",
-			"fluxer_app/scripts/build",
+			"relay_app/scripts/build",
 			"!**/dist",
-			"!**/fluxer_app/src/media/data/emojis.json",
-			"!**/fluxer_app/src/features/i18n/locales/*/messages.js",
-			"!**/fluxer_app/src/features/i18n/locales/*/messages.mjs",
-			"!**/fluxer_app/src/env.d.ts",
+			"!**/relay_app/src/media/data/emojis.json",
+			"!**/relay_app/src/features/i18n/locales/*/messages.js",
+			"!**/relay_app/src/features/i18n/locales/*/messages.mjs",
+			"!**/relay_app/src/env.d.ts",
 			"!**/*.generated.*",
 			"!**/*.pb.*",
 			"!**/*_pb.*",
@@ -206,18 +206,18 @@
 			"!**/*.yaml",
 			"!**/*.yml",
 			"!**/*.module.css.d.ts",
-			"!**/fluxer_app/src/features/ui/components/SVGMasks.tsx",
-			"!fluxer_static",
+			"!**/relay_app/src/features/ui/components/SVGMasks.tsx",
+			"!relay_static",
 			"!packages/fonts",
-			"!fluxer_admin/static/htmx.min.js",
-			"!fluxer_api/src/api/openapi/openapi.json",
-			"!fluxer_admin/openapi-admin.json",
-			"!fluxer_api/pkgs/email/src/email_i18n/weblate",
-			"!fluxer_api/src/api/content_i18n/weblate",
+			"!relay_admin/static/htmx.min.js",
+			"!relay_api/src/api/openapi/openapi.json",
+			"!relay_admin/openapi-admin.json",
+			"!relay_api/pkgs/email/src/email_i18n/weblate",
+			"!relay_api/src/api/content_i18n/weblate",
 			"!packages/errors/src/i18n/weblate",
-			"!fluxer_rexctl/internal/adminapi/configschema.json",
-			"!fluxer_rexctl/internal/stack/imageset.json",
-			"!fluxer_rexctl/internal/stack/files/profiles.json"
+			"!relay_rexctl/internal/adminapi/configschema.json",
+			"!relay_rexctl/internal/stack/imageset.json",
+			"!relay_rexctl/internal/stack/files/profiles.json"
 		],
 		"ignoreUnknown": true
 	}

@@ -16,8 +16,8 @@ import {
 	RegistrationModes,
 	VerificationBases,
 	type VerificationBasis,
-} from '@fluxer/constants/src/AccountConfigConstants';
-import {type AccountIdentityMode, AccountIdentityModes} from '@fluxer/constants/src/AccountIdentityConstants';
+} from '@relay/constants/src/AccountConfigConstants';
+import {type AccountIdentityMode, AccountIdentityModes} from '@relay/constants/src/AccountIdentityConstants';
 import {
 	type AccountTier,
 	AccountTiers,
@@ -34,9 +34,9 @@ import {
 	TierExemptions,
 	type TierGatedAction,
 	TierGatedActions,
-} from '@fluxer/constants/src/AccountTierConstants';
-import {type CaptchaProvider, CaptchaProviders} from '@fluxer/constants/src/CaptchaConstants';
-import {hasUserTrait, type UserTraitSet, UserTraits} from '@fluxer/constants/src/UserTraitConstants';
+} from '@relay/constants/src/AccountTierConstants';
+import {type CaptchaProvider, CaptchaProviders} from '@relay/constants/src/CaptchaConstants';
+import {hasUserTrait, type UserTraitSet, UserTraits} from '@relay/constants/src/UserTraitConstants';
 
 export function resolveEffectiveVerificationBasis(params: {
 	identityMode: AccountIdentityMode;

@@ -1680,333 +1680,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fluxer-ci"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "aws-config",
- "aws-sdk-s3",
- "base64 0.23.1",
- "brotli",
- "chrono",
- "clap",
- "hex",
- "md-5",
- "reqwest",
- "serde",
- "serde_json",
- "sha2 0.11.1",
- "tar",
- "tempfile",
- "tokio",
- "walkdir",
- "zip",
-]
-
-[[package]]
-name = "fluxer-dev"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "chrono",
- "clap",
- "hex",
- "hyper",
- "hyper-util",
- "libc",
- "regex",
- "reqwest",
- "scylla",
- "serde",
- "serde_json",
- "sha2 0.11.1",
- "tempfile",
- "tokio",
- "url",
-]
-
-[[package]]
-name = "fluxer-gifs"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "fluxer-svc",
- "fluxer_common",
- "futures",
- "moka",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "url",
- "urlencoding",
-]
-
-[[package]]
-name = "fluxer-media-proxy"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "base64 0.23.1",
- "bytes",
- "cc",
- "clap",
- "fluxer_common",
- "futures-util",
- "hex",
- "hmac",
- "http",
- "http-body",
- "http-body-util",
- "hyper",
- "libc",
- "memmap2",
- "moka",
- "parking_lot",
- "percent-encoding",
- "pkg-config",
- "rand 0.10.3",
- "rand_chacha 0.10.0",
- "reqwest",
- "reqwest-middleware",
- "reqwest-retry",
- "serde",
- "serde_json",
- "sha2 0.11.1",
- "tempfile",
- "thiserror",
- "tokio",
- "tower",
- "tower-http 0.7.1",
- "tracing",
- "tracing-subscriber",
- "url",
- "wyhash",
-]
-
-[[package]]
-name = "fluxer-messages"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64 0.23.1",
- "chrono",
- "fluxer-svc",
- "fluxer_common",
- "fluxer_markdown_parser",
- "futures",
- "linkify",
- "mime_guess",
- "rmp-serde",
- "scylla",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "url",
-]
-
-[[package]]
-name = "fluxer-push"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "base64 0.23.1",
- "clap",
- "fluxer-svc",
- "fluxer_common",
- "futures",
- "hmac",
- "p256",
- "percent-encoding",
- "rand 0.10.3",
- "reqwest",
- "ring",
- "serde",
- "serde_json",
- "sha2 0.11.1",
- "thiserror",
- "tokio",
- "tracing",
- "url",
-]
-
-[[package]]
-name = "fluxer-snowflakes"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "fluxer-svc",
- "serde",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "fluxer-svc"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-nats",
- "async-trait",
- "axum",
- "bytes",
- "chrono",
- "deadpool-postgres",
- "fluxer_common",
- "futures",
- "rmp-serde",
- "rustls",
- "scylla",
- "serde",
- "serde_json",
- "tokio",
- "tokio-postgres",
- "tokio-postgres-rustls",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "fluxer-unfurl"
-version = "0.1.0"
-dependencies = [
- "ammonia",
- "anyhow",
- "base64 0.23.1",
- "chrono",
- "encoding_rs",
- "entities",
- "fluxer-svc",
- "fluxer_common",
- "hickory-resolver",
- "infer",
- "moka",
- "regex",
- "reqwest",
- "ring",
- "scraper",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
- "url",
- "urlencoding",
-]
-
-[[package]]
-name = "fluxer-users"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64 0.23.1",
- "chrono",
- "ciborium",
- "fluxer-svc",
- "fluxer_common",
- "futures",
- "hmac",
- "moka",
- "ring",
- "scylla",
- "serde",
- "serde_json",
- "sha2 0.11.1",
- "tokio",
- "tracing",
- "x509-cert",
-]
-
-[[package]]
-name = "fluxer_admin"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "base64 0.23.1",
- "chrono",
- "fluxer_common",
- "hmac",
- "maud",
- "openapiv3",
- "prettyplease",
- "progenitor",
- "progenitor-client",
- "rand 0.10.3",
- "regress",
- "reqwest",
- "serde",
- "serde_json",
- "sha2 0.11.1",
- "syn 3.0.9",
- "time",
- "tokio",
- "tower-http 0.7.1",
- "tracing",
- "tracing-subscriber",
- "url",
- "urlencoding",
-]
-
-[[package]]
-name = "fluxer_app_proxy"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "base64 0.23.1",
- "fluxer_common",
- "futures-util",
- "hex",
- "rand 0.10.3",
- "reqwest",
- "serde_json",
- "sha2 0.11.1",
- "thiserror",
- "tokio",
- "tokio-util",
- "tower",
- "tower-http 0.7.1",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "fluxer_common"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64 0.23.1",
- "hex",
- "hmac",
- "http",
- "libc",
- "reqwest",
- "serde",
- "serde_json",
- "sha2 0.11.1",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "url",
-]
-
-[[package]]
-name = "fluxer_markdown_parser"
-version = "0.1.0"
-dependencies = [
- "criterion",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3726,6 +3399,333 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32eef8b209c3c1c15dbad02c1f30f9539f00dc7253e0cbcdaae442a50a09d7c1"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "relay-ci"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aws-config",
+ "aws-sdk-s3",
+ "base64 0.23.1",
+ "brotli",
+ "chrono",
+ "clap",
+ "hex",
+ "md-5",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "tar",
+ "tempfile",
+ "tokio",
+ "walkdir",
+ "zip",
+]
+
+[[package]]
+name = "relay-dev"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "chrono",
+ "clap",
+ "hex",
+ "hyper",
+ "hyper-util",
+ "libc",
+ "regex",
+ "reqwest",
+ "scylla",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "tempfile",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "relay-gifs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "futures",
+ "moka",
+ "relay-svc",
+ "relay_common",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "url",
+ "urlencoding",
+]
+
+[[package]]
+name = "relay-media-proxy"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64 0.23.1",
+ "bytes",
+ "cc",
+ "clap",
+ "futures-util",
+ "hex",
+ "hmac",
+ "http",
+ "http-body",
+ "http-body-util",
+ "hyper",
+ "libc",
+ "memmap2",
+ "moka",
+ "parking_lot",
+ "percent-encoding",
+ "pkg-config",
+ "rand 0.10.3",
+ "rand_chacha 0.10.0",
+ "relay_common",
+ "reqwest",
+ "reqwest-middleware",
+ "reqwest-retry",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tower-http 0.7.1",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "wyhash",
+]
+
+[[package]]
+name = "relay-messages"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.23.1",
+ "chrono",
+ "futures",
+ "linkify",
+ "mime_guess",
+ "relay-svc",
+ "relay_common",
+ "relay_markdown_parser",
+ "rmp-serde",
+ "scylla",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "url",
+]
+
+[[package]]
+name = "relay-push"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64 0.23.1",
+ "clap",
+ "futures",
+ "hmac",
+ "p256",
+ "percent-encoding",
+ "rand 0.10.3",
+ "relay-svc",
+ "relay_common",
+ "reqwest",
+ "ring",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "url",
+]
+
+[[package]]
+name = "relay-snowflakes"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "relay-svc",
+ "serde",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "relay-svc"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-nats",
+ "async-trait",
+ "axum",
+ "bytes",
+ "chrono",
+ "deadpool-postgres",
+ "futures",
+ "relay_common",
+ "rmp-serde",
+ "rustls",
+ "scylla",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-postgres",
+ "tokio-postgres-rustls",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "relay-unfurl"
+version = "0.1.0"
+dependencies = [
+ "ammonia",
+ "anyhow",
+ "base64 0.23.1",
+ "chrono",
+ "encoding_rs",
+ "entities",
+ "hickory-resolver",
+ "infer",
+ "moka",
+ "regex",
+ "relay-svc",
+ "relay_common",
+ "reqwest",
+ "ring",
+ "scraper",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "url",
+ "urlencoding",
+]
+
+[[package]]
+name = "relay-users"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.23.1",
+ "chrono",
+ "ciborium",
+ "futures",
+ "hmac",
+ "moka",
+ "relay-svc",
+ "relay_common",
+ "ring",
+ "scylla",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "tokio",
+ "tracing",
+ "x509-cert",
+]
+
+[[package]]
+name = "relay_admin"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64 0.23.1",
+ "chrono",
+ "hmac",
+ "maud",
+ "openapiv3",
+ "prettyplease",
+ "progenitor",
+ "progenitor-client",
+ "rand 0.10.3",
+ "regress",
+ "relay_common",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "syn 3.0.9",
+ "time",
+ "tokio",
+ "tower-http 0.7.1",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "urlencoding",
+]
+
+[[package]]
+name = "relay_app_proxy"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64 0.23.1",
+ "futures-util",
+ "hex",
+ "rand 0.10.3",
+ "relay_common",
+ "reqwest",
+ "serde_json",
+ "sha2 0.11.1",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+ "tower",
+ "tower-http 0.7.1",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "relay_common"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.23.1",
+ "hex",
+ "hmac",
+ "http",
+ "libc",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+]
+
+[[package]]
+name = "relay_markdown_parser"
+version = "0.1.0"
+dependencies = [
+ "criterion",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

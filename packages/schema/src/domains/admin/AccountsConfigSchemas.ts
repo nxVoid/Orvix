@@ -4,7 +4,7 @@ import {
 	AccountCleanupDefaults,
 	InstantAccountLimits,
 	LegacyDateOfBirthEnforcements,
-} from '@fluxer/constants/src/AccountConfigConstants';
+} from '@relay/constants/src/AccountConfigConstants';
 import {
 	CleanupModeSchema,
 	DateOfBirthPolicySchema,
@@ -13,7 +13,7 @@ import {
 	InteractionTierModeSchema,
 	LastSessionCleanupModeSchema,
 	VerificationBasisSchema,
-} from '@fluxer/schema/src/domains/account/AccountTierSchemas';
+} from '@relay/schema/src/domains/account/AccountTierSchemas';
 import {z} from 'zod';
 
 const LegacyDateOfBirthEnforcementSchema = z

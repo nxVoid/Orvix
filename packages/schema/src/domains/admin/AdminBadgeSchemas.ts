@@ -12,18 +12,18 @@ import {
 	CUSTOM_BADGES_PER_USER_CEILING,
 	CustomBadgeTypes,
 	HIDEABLE_BUILT_IN_BADGE_KINDS,
-} from '@fluxer/constants/src/BadgeConstants';
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import {withBase64Binary} from '@fluxer/schema/src/primitives/Base64BinaryFields';
-import {createQueryIntegerType} from '@fluxer/schema/src/primitives/QueryValidators';
+} from '@relay/constants/src/BadgeConstants';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
+import {withBase64Binary} from '@relay/schema/src/primitives/Base64BinaryFields';
+import {createQueryIntegerType} from '@relay/schema/src/primitives/QueryValidators';
 import {
 	createNamedStringLiteralUnion,
 	createStringType,
 	SnowflakeStringType,
 	SnowflakeType,
 	withOpenApiType,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {URLType} from '@fluxer/schema/src/primitives/UrlValidators';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {URLType} from '@relay/schema/src/primitives/UrlValidators';
 import {z} from 'zod';
 
 export const CustomBadgeTypeSchema = withOpenApiType(

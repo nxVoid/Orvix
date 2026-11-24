@@ -4,56 +4,56 @@ name: env-reference
 on:
   pull_request:
     paths:
-      - fluxer_rexctl/**
-      - fluxer_admin/**
-      - fluxer_api/**
-      - fluxer_app_proxy/**
-      - fluxer_common/**
-      - fluxer_gateway/**
-      - fluxer_gifs/**
-      - fluxer_media_proxy/**
-      - fluxer_messages/**
-      - fluxer_push/**
-      - fluxer_snowflakes/**
-      - fluxer_static/**
-      - fluxer_svc/**
-      - fluxer_unfurl/**
-      - fluxer_users/**
-      - fluxer_*/Dockerfile
+      - relay_rexctl/**
+      - relay_admin/**
+      - relay_api/**
+      - relay_app_proxy/**
+      - relay_common/**
+      - relay_gateway/**
+      - relay_gifs/**
+      - relay_media_proxy/**
+      - relay_messages/**
+      - relay_push/**
+      - relay_snowflakes/**
+      - relay_static/**
+      - relay_svc/**
+      - relay_unfurl/**
+      - relay_users/**
+      - orvix_*/Dockerfile
       - packages/**
-      - fluxer_docs/scripts/**
-      - fluxer_docs/src/installer/**
-      - fluxer_docs/src/pages/**
-      - fluxer_docs/src/server/**
-      - fluxer_docs/src/content/docs/**
+      - relay_docs/scripts/**
+      - relay_docs/src/installer/**
+      - relay_docs/src/pages/**
+      - relay_docs/src/server/**
+      - relay_docs/src/content/docs/**
       - deploy/helm/**
       - .github/workflows/env-reference.yaml
   push:
     branches:
       - main
     paths:
-      - fluxer_rexctl/**
-      - fluxer_admin/**
-      - fluxer_api/**
-      - fluxer_app_proxy/**
-      - fluxer_common/**
-      - fluxer_gateway/**
-      - fluxer_gifs/**
-      - fluxer_media_proxy/**
-      - fluxer_messages/**
-      - fluxer_push/**
-      - fluxer_snowflakes/**
-      - fluxer_static/**
-      - fluxer_svc/**
-      - fluxer_unfurl/**
-      - fluxer_users/**
-      - fluxer_*/Dockerfile
+      - relay_rexctl/**
+      - relay_admin/**
+      - relay_api/**
+      - relay_app_proxy/**
+      - relay_common/**
+      - relay_gateway/**
+      - relay_gifs/**
+      - relay_media_proxy/**
+      - relay_messages/**
+      - relay_push/**
+      - relay_snowflakes/**
+      - relay_static/**
+      - relay_svc/**
+      - relay_unfurl/**
+      - relay_users/**
+      - orvix_*/Dockerfile
       - packages/**
-      - fluxer_docs/scripts/**
-      - fluxer_docs/src/installer/**
-      - fluxer_docs/src/pages/**
-      - fluxer_docs/src/server/**
-      - fluxer_docs/src/content/docs/**
+      - relay_docs/scripts/**
+      - relay_docs/src/installer/**
+      - relay_docs/src/pages/**
+      - relay_docs/src/server/**
+      - relay_docs/src/content/docs/**
       - deploy/helm/**
       - .github/workflows/env-reference.yaml
 
@@ -67,7 +67,7 @@ concurrency:
 defaults:
   run:
     shell: bash
-    working-directory: fluxer_rexctl
+    working-directory: relay_rexctl
 
 jobs:
   env-reference:
@@ -83,7 +83,7 @@ jobs:
         with:
           go-version: "1.27.x"
           check-latest: true
-          cache-dependency-path: fluxer_rexctl/go.sum
+          cache-dependency-path: relay_rexctl/go.sum
 
       - name: every environment variable is documented
         run: go test -count=1 ./internal/instance

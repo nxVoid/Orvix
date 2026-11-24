@@ -1,0 +1,40 @@
+{
+  "id": "amethyst_crown",
+  "name": "Amethyst Crown",
+  "version": 2,
+  "category": "avatar_frame",
+  "rarity": "Legendary",
+  "price_rp": 3400,
+  "premium": true,
+  "asset": "amethyst_crown-v2.svg",
+  "poster": "amethyst_crown-v2-static.svg",
+  "preview": "preview.webp",
+  "sizes": [
+    32,
+    40,
+    64,
+    96,
+    128
+  ],
+  "master_size": [
+    256,
+    256
+  ],
+  "protected_aperture_radius": 98,
+  "motion": {
+    "duration_seconds": 18,
+    "technique": "SVG SMIL",
+    "loop": "Matching endpoints; poster selected when playback is not permitted"
+  },
+  "budgets": {
+    "max_asset_bytes": 180000,
+    "max_concurrent_animations": 2,
+    "target_fps": 30
+  },
+  "license": "AGPL-3.0-or-later",
+  "source": "Original built-in image_gen material artwork; authored vector mask and controlled glint",
+  "quality_state": "candidate",
+  "quality_notes": [
+    "Generated material is convincing, but the face-protection mask cuts upper mounts. Candidate is excluded from catalog upgrades pending silhouette revision."
+  ]
+}

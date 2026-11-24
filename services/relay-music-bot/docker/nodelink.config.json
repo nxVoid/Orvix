@@ -1,0 +1,35 @@
+{
+  "server": {
+    "port": 3000,
+    "password": "youshallnotpass"
+  },
+  "api": {
+    "enableTrackStreamEndpoint": true,
+    "enableLoadStreamEndpoint": true
+  },
+  "sources": {
+    "youtube": true,
+    "ytmusic": true,
+    "soundcloud": true,
+    "deezer": true,
+    "spotify": true,
+    "http": true
+  },
+  "search": {
+    "defaultSource": "ytmusic",
+    "fallback": true
+  },
+  "spotify": {
+    "playlistLoadLimit": 10
+  },
+  "soundcloud": {
+    "playlistLoadLimit": 10
+  },
+  "audio": {
+    "normalization": true
+  },
+  "cache": {
+    "enabled": true,
+    "maxSize": 536870912
+  }
+}

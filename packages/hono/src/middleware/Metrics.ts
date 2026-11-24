@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {isLoopbackIpAddress} from '@fluxer/ip_utils/src/IpAddress';
 import type {HttpBindings} from '@hono/node-server';
+import {isLoopbackIpAddress} from '@relay/ip_utils/src/IpAddress';
 import type {Context, Handler, MiddlewareHandler} from 'hono';
 
 const SKIP_PATHS = new Set(['/_health', '/_healthz', '/_metrics']);
@@ -189,7 +189,7 @@ interface MetricsResult {
 }
 
 export function createMetricsMiddleware(serviceName: string): MetricsResult {
-	const prefix = `fluxer_${serviceName}`;
+	const prefix = `orvix_${serviceName}`;
 	const startTime = performance.now();
 
 	const requestsTotal = new Counter();

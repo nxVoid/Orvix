@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       build-version:
-        description: "Explicit Fluxer CalVer build version (YYYY.MDD.MICRO, UTC HHMMSS without leading zeroes) to use instead of automatic UTC clock allocation"
+        description: "Explicit Orvix CalVer build version (YYYY.MDD.MICRO, UTC HHMMSS without leading zeroes) to use instead of automatic UTC clock allocation"
         type: string
         required: false
         default: ""
@@ -15,7 +15,7 @@ on:
         required: false
         default: "v1"
       component-versions:
-        description: "Per-component overrides, one <image>=<version> entry per line (for example fluxer-api=2026.830.191141)"
+        description: "Per-component overrides, one <image>=<version> entry per line (for example relay-api=2026.830.191141)"
         type: string
         required: false
         default: ""
@@ -76,10 +76,10 @@ jobs:
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
-          repositories: fluxer
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
+          repositories: orvix
           permission-contents: write
           permission-packages: read
 
@@ -122,7 +122,7 @@ jobs:
           VERSION: ${{ steps.vars.outputs.build_version }}
         run: >-
           tools/ci/run.sh image-set verify
-          --manifest "release-out/fluxer-release-${VERSION}.json"
+          --manifest "release-out/relay-release-${VERSION}.json"
 
       - name: check bundle commit
         env:
@@ -166,8 +166,8 @@ jobs:
       - name: check the bundle commit has rexctl
         run: |
           set -euo pipefail
-          if [ ! -f fluxer_rexctl/.goreleaser.yaml ]; then
-            echo "${BUNDLE_COMMIT} has no fluxer_rexctl/.goreleaser.yaml, so this image set cannot ship rexctl" >&2
+          if [ ! -f relay_rexctl/.goreleaser.yaml ]; then
+            echo "${BUNDLE_COMMIT} has no relay_rexctl/.goreleaser.yaml, so this image set cannot ship rexctl" >&2
             exit 1
           fi
 
@@ -182,8 +182,8 @@ jobs:
           python3 - <<'EOF'
           import json, os, re, sys
           version = os.environ["VERSION"]
-          manifest = json.load(open(f"release-out/fluxer-release-{version}.json"))
-          compose = open(f"release-out/fluxer-release-{version}.yml").read()
+          manifest = json.load(open(f"release-out/relay-release-{version}.json"))
+          compose = open(f"release-out/relay-release-{version}.yml").read()
           images = {c["component"]: f'{c["image"]}@{c["digest"]}' for c in manifest["components"]}
           versions = {c["component"]: c["build_version"] for c in manifest["components"]}
           pattern = re.compile(r"^  ([a-z0-9-]+):\n    image: \S*/([a-z0-9-]+)@\$\{[A-Z0-9_]+:-(sha256:[0-9a-f]{64})\}$", re.M)
@@ -197,7 +197,7 @@ jobs:
               builds[service] = versions[component]
           if not services or len(services) != compose.count("\n    image: "):
               sys.exit("could not map every service in the compose override to an image")
-          with open("fluxer_rexctl/internal/stack/imageset.json", "w") as f:
+          with open("relay_rexctl/internal/stack/imageset.json", "w") as f:
               json.dump({"release": version, "images": dict(sorted(services.items())), "builds": dict(sorted(builds.items()))}, f, indent=2)
               f.write("\n")
           print(f"embedded {len(services)} service images for {version}")
@@ -207,7 +207,7 @@ jobs:
         with:
           go-version: "1.27.x"
           check-latest: true
-          cache-dependency-path: fluxer_rexctl/go.sum
+          cache-dependency-path: relay_rexctl/go.sum
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -216,13 +216,13 @@ jobs:
           restore-keys: layer-sizes-
 
       - name: add image sizes to the image set
-        working-directory: fluxer_rexctl
+        working-directory: relay_rexctl
         env:
           GHCR_TOKEN: ${{ github.token }}
         run: go run ./internal/stack/layersizes -set internal/stack/imageset.json -cache "${RUNNER_TEMP}/layer-sizes.json"
 
       - name: govulncheck
-        working-directory: fluxer_rexctl
+        working-directory: relay_rexctl
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
 
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
@@ -267,7 +267,7 @@ jobs:
         with:
           distribution: goreleaser
           version: v2.18.3
-          workdir: fluxer_rexctl
+          workdir: relay_rexctl
           args: release --clean --skip=publish,validate
         env:
           GORELEASER_CURRENT_TAG: v${{ needs.manifest.outputs.version }}
@@ -276,7 +276,7 @@ jobs:
           AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME: ${{ secrets.AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME }}
 
       - name: check the release files
-        working-directory: fluxer_rexctl/dist
+        working-directory: relay_rexctl/dist
         env:
           IDENTITY: ${{ github.server_url }}/${{ github.workflow_ref }}
         run: |
@@ -311,22 +311,22 @@ jobs:
           cp rexctl_"${VERSION}"_* checksums.txt checksums.txt.sigstore.json rexctl-release.json ../release/
 
       - name: write the compose bundle
-        working-directory: fluxer_rexctl
+        working-directory: relay_rexctl
         run: |
           set -euo pipefail
-          out="${RUNNER_TEMP}/fluxer-compose"
+          out="${RUNNER_TEMP}/orvix-compose"
           go run . bundle --out "${out}"
-          tar -czf "release/fluxer-compose-${VERSION}.tar.gz" -C "${out}" .
-          tar -tzf "release/fluxer-compose-${VERSION}.tar.gz"
+          tar -czf "release/orvix-compose-${VERSION}.tar.gz" -C "${out}" .
+          tar -tzf "release/orvix-compose-${VERSION}.tar.gz"
 
       - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
         with:
-          subject-checksums: fluxer_rexctl/dist/checksums.txt
+          subject-checksums: relay_rexctl/dist/checksums.txt
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: rexctl
-          path: fluxer_rexctl/release/
+          path: relay_rexctl/release/
           if-no-files-found: error
           retention-days: 7
 
@@ -344,10 +344,10 @@ jobs:
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
-          repositories: fluxer
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
+          repositories: orvix
           permission-contents: write
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -367,12 +367,12 @@ jobs:
           BUNDLE_COMMIT: ${{ needs.manifest.outputs.bundle_commit }}
         run: |
           set -euo pipefail
-          gh release create "fluxer-release@${VERSION}" \
-            --repo fluxerapp/fluxer \
+          gh release create "relay-release@${VERSION}" \
+            --repo orvixapp/orvix \
             --target "${BUNDLE_COMMIT}" \
-            --title "fluxer-release ${VERSION}" \
+            --title "relay-release ${VERSION}" \
             --latest=true \
             --notes "" \
-            "release-out/fluxer-release-${VERSION}.json" \
-            "release-out/fluxer-release-${VERSION}.yml" \
+            "release-out/relay-release-${VERSION}.json" \
+            "release-out/relay-release-${VERSION}.yml" \
             rexctl/*

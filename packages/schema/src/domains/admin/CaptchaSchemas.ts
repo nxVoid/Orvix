@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {CaptchaProviders} from '@fluxer/constants/src/CaptchaConstants';
-import {CaptchaProviderSchema} from '@fluxer/schema/src/domains/account/AccountTierSchemas';
+import {CaptchaProviders} from '@relay/constants/src/CaptchaConstants';
+import {CaptchaProviderSchema} from '@relay/schema/src/domains/account/AccountTierSchemas';
 import {z} from 'zod';
 
 const CAPTCHA_MIN_COST = 1000;

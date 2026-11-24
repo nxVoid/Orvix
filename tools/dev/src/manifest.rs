@@ -7,7 +7,7 @@ pub const LOOPBACK_HOST: &str = "127.0.0.1";
 pub const ANY_HOST: &str = "0.0.0.0";
 
 pub const DEV_PROXY_PORT: u16 = 8088;
-pub const DEV_PROXY_GATEWAY_PORTS_ENV: &str = "FLUXER_DEV_PROXY_GATEWAY_PORTS";
+pub const DEV_PROXY_GATEWAY_PORTS_ENV: &str = "ORVIX_DEV_PROXY_GATEWAY_PORTS";
 pub const APP_PORT: u16 = 3000;
 pub const APP_PROXY_PORT: u16 = 8773;
 pub const ADMIN_PORT: u16 = 3020;
@@ -52,7 +52,7 @@ pub const PROXY_ROUTES: &[ProxyRoute] = &[
         alternate_ports: &[],
     },
     ProxyRoute {
-        prefix: "/fluxer-uploads",
+        prefix: "/orvix-uploads",
         host: LOOPBACK_HOST,
         port: 8333,
         strip_prefix: false,
@@ -156,32 +156,32 @@ pub fn rust_services() -> Vec<RustServiceSpec> {
     vec![
         RustServiceSpec {
             name: "gifs",
-            package: "fluxer-gifs",
-            path: ROOT.join("fluxer_gifs"),
+            package: "relay-gifs",
+            path: ROOT.join("relay_gifs"),
             port_base: 8110,
         },
         RustServiceSpec {
             name: "messages",
-            package: "fluxer-messages",
-            path: ROOT.join("fluxer_messages"),
+            package: "relay-messages",
+            path: ROOT.join("relay_messages"),
             port_base: 8112,
         },
         RustServiceSpec {
             name: "snowflakes",
-            package: "fluxer-snowflakes",
-            path: ROOT.join("fluxer_snowflakes"),
+            package: "relay-snowflakes",
+            path: ROOT.join("relay_snowflakes"),
             port_base: 8120,
         },
         RustServiceSpec {
             name: "unfurl",
-            package: "fluxer-unfurl",
-            path: ROOT.join("fluxer_unfurl"),
+            package: "relay-unfurl",
+            path: ROOT.join("relay_unfurl"),
             port_base: 8122,
         },
         RustServiceSpec {
             name: "users",
-            package: "fluxer-users",
-            path: ROOT.join("fluxer_users"),
+            package: "relay-users",
+            path: ROOT.join("relay_users"),
             port_base: 8124,
         },
     ]

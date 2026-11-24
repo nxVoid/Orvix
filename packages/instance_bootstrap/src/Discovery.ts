@@ -6,18 +6,19 @@ import {
 	InstantAccountAvailability,
 	InteractionTierModes,
 	VerificationBases,
-} from '@fluxer/constants/src/AccountConfigConstants';
+} from '@relay/constants/src/AccountConfigConstants';
 import {
 	AccountIdentityLockReasons,
 	AccountIdentityModes,
 	TagStyles,
-} from '@fluxer/constants/src/AccountIdentityConstants';
-import {BUILT_IN_GUILD_BADGE_KINDS} from '@fluxer/constants/src/BadgeConstants';
-import {Headers as HttpHeader} from '@fluxer/constants/src/Headers';
-import {HttpStatus, MimeType} from '@fluxer/constants/src/HttpConstants';
-import type {LimitKey} from '@fluxer/constants/src/LimitConfigMetadata';
-import {InstanceEndpointKind, normalizeInstanceEndpoint} from '@fluxer/instance_bootstrap/src/EndpointNormalization';
-import {CanonicalNetworkProtocol} from '@fluxer/instance_bootstrap/src/NetworkOrigin';
+} from '@relay/constants/src/AccountIdentityConstants';
+import {BUILT_IN_GUILD_BADGE_KINDS} from '@relay/constants/src/BadgeConstants';
+import {Headers as HttpHeader} from '@relay/constants/src/Headers';
+import {HttpStatus, MimeType} from '@relay/constants/src/HttpConstants';
+import type {LimitKey} from '@relay/constants/src/LimitConfigMetadata';
+import {InstanceEndpointKind, normalizeInstanceEndpoint} from '@relay/instance_bootstrap/src/EndpointNormalization';
+import {CanonicalNetworkProtocol} from '@relay/instance_bootstrap/src/NetworkOrigin';
+import {publicTunnelRequestHeaders} from '@relay/instance_bootstrap/src/PublicTunnelHeaders';
 import {
 	AGE_POLICY_ACTIONS,
 	CURRENT_INSTANCE_CODENAME,
@@ -41,11 +42,11 @@ import {
 	type InstanceSso,
 	PUSH_DELIVERY_MODES,
 	REGISTRATION_MODES,
-} from '@fluxer/instance_bootstrap/src/Types';
-import type {LimitConfigSnapshot, LimitConfigWireFormat, LimitFilter, LimitRule} from '@fluxer/limits/src/LimitTypes';
-import {EXPERIMENT_BUCKET_RESOLUTION} from '@fluxer/schema/src/domains/experiment/ExperimentBucket';
+} from '@relay/instance_bootstrap/src/Types';
+import type {LimitConfigSnapshot, LimitConfigWireFormat, LimitFilter, LimitRule} from '@relay/limits/src/LimitTypes';
+import {EXPERIMENT_BUCKET_RESOLUTION} from '@relay/schema/src/domains/experiment/ExperimentBucket';
 
-export const INSTANCE_DISCOVERY_PATH = '/.well-known/fluxer';
+export const INSTANCE_DISCOVERY_PATH = '/.well-known/orvix';
 const INSTANCE_DISCOVERY_CONVENTIONAL_ENDPOINT_PATH = '/api';
 export const INSTANCE_DISCOVERY_MAX_BYTES = 1024 * 1024;
 export const INSTANCE_DISCOVERY_MAX_CHUNKS = 1024;
@@ -337,7 +338,7 @@ async function requestInstanceDiscovery(
 	const fetchInstance = request.fetch ?? globalThis.fetch;
 	const response = await fetchInstance(url, {
 		method: 'GET',
-		headers: {[HttpHeader.ACCEPT]: MimeType.JSON, ...request.conditionalHeaders},
+		headers: {[HttpHeader.ACCEPT]: MimeType.JSON, ...request.conditionalHeaders, ...publicTunnelRequestHeaders(url)},
 		redirect: 'error',
 		credentials: 'omit',
 		cache: 'no-store',

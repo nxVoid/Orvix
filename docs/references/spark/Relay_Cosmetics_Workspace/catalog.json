@@ -1,0 +1,110 @@
+[
+  {
+    "id": "violet_halo",
+    "type": "avatar_frame",
+    "name": "Violet Halo",
+    "rarity": "Rare",
+    "price_rp": 700,
+    "asset": "avatar_frames/violet_halo.svg",
+    "animated": true
+  },
+  {
+    "id": "quantum_pulse",
+    "type": "avatar_frame",
+    "name": "Quantum Pulse",
+    "rarity": "Epic",
+    "price_rp": 1400,
+    "asset": "avatar_frames/quantum_pulse.svg",
+    "animated": true
+  },
+  {
+    "id": "amethyst_crown",
+    "type": "avatar_frame",
+    "name": "Amethyst Crown",
+    "rarity": "Legendary",
+    "price_rp": 3400,
+    "asset": "avatar_frames/amethyst_crown.svg",
+    "animated": false
+  },
+  {
+    "id": "midnight_orbit",
+    "type": "avatar_frame",
+    "name": "Midnight Orbit",
+    "rarity": "Epic",
+    "price_rp": 2000,
+    "asset": "avatar_frames/midnight_orbit.svg",
+    "animated": true
+  },
+  {
+    "id": "prism_core",
+    "type": "avatar_frame",
+    "name": "Prism Core",
+    "rarity": "Mythic",
+    "price_rp": 5200,
+    "asset": "avatar_frames/prism_core.svg",
+    "animated": true
+  },
+  {
+    "id": "nebula_drift",
+    "type": "banner",
+    "name": "Nebula Drift",
+    "rarity": "Epic",
+    "price_rp": 2600,
+    "asset": "banners/nebula_drift.svg",
+    "animated": true
+  },
+  {
+    "id": "relay_aurora",
+    "type": "banner",
+    "name": "Relay Aurora",
+    "rarity": "Epic",
+    "price_rp": 3000,
+    "asset": "banners/relay_aurora.svg",
+    "animated": true
+  },
+  {
+    "id": "eclipse",
+    "type": "banner",
+    "name": "Eclipse",
+    "rarity": "Epic",
+    "price_rp": 3400,
+    "asset": "banners/eclipse.svg",
+    "animated": true
+  },
+  {
+    "id": "quantum_horizon",
+    "type": "banner",
+    "name": "Quantum Horizon",
+    "rarity": "Epic",
+    "price_rp": 3800,
+    "asset": "banners/quantum_horizon.svg",
+    "animated": true
+  },
+  {
+    "id": "eclipse_plate",
+    "type": "nameplate",
+    "name": "Eclipse Plate",
+    "rarity": "Rare",
+    "price_rp": 950,
+    "asset": "nameplates/eclipse_plate.svg",
+    "animated": true
+  },
+  {
+    "id": "amethyst_line",
+    "type": "nameplate",
+    "name": "Amethyst Line",
+    "rarity": "Rare",
+    "price_rp": 950,
+    "asset": "nameplates/amethyst_line.svg",
+    "animated": true
+  },
+  {
+    "id": "orbit_name",
+    "type": "nameplate",
+    "name": "Orbit Name",
+    "rarity": "Rare",
+    "price_rp": 950,
+    "asset": "nameplates/orbit_name.svg",
+    "animated": true
+  }
+]

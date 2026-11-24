@@ -7,21 +7,17 @@ import {
 	invalidArgument,
 	isConnected,
 	unsupportedCapability,
-} from '@fluxer/voice_engine_v2/src/core/reducers/_helpers';
-import {
-	applyMediaFailure,
-	applyMediaSuccess,
-	completeUnpublish,
-} from '@fluxer/voice_engine_v2/src/core/reducers/_media';
-import type {VoiceEngineV2Snapshot, VoiceEngineV2Transition} from '@fluxer/voice_engine_v2/src/core/state';
-import {planVoiceEngineV2CameraEncodingChange} from '@fluxer/voice_engine_v2/src/policies/cameraShare';
-import type {VoiceEngineV2Event} from '@fluxer/voice_engine_v2/src/protocol/events';
+} from '@relay/voice_engine_v2/src/core/reducers/_helpers';
+import {applyMediaFailure, applyMediaSuccess, completeUnpublish} from '@relay/voice_engine_v2/src/core/reducers/_media';
+import type {VoiceEngineV2Snapshot, VoiceEngineV2Transition} from '@relay/voice_engine_v2/src/core/state';
+import {planVoiceEngineV2CameraEncodingChange} from '@relay/voice_engine_v2/src/policies/cameraShare';
+import type {VoiceEngineV2Event} from '@relay/voice_engine_v2/src/protocol/events';
 import type {
 	VoiceEngineV2CameraEncodingOptions,
 	VoiceEngineV2CameraOptions,
 	VoiceEngineV2Error,
 	VoiceEngineV2OperationId,
-} from '@fluxer/voice_engine_v2/src/protocol/types';
+} from '@relay/voice_engine_v2/src/protocol/types';
 
 type VoiceEngineV2CameraEvent = Extract<VoiceEngineV2Event, {type: `camera.${string}`}>;
 

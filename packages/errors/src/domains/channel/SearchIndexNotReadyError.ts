@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
-import {FluxerError} from '@fluxer/errors/src/FluxerError';
+import {APIErrorCodes} from '@relay/constants/src/ApiErrorCodes';
+import {RelayError} from '@relay/errors/src/RelayError';
 
-export class SearchIndexNotReadyError extends FluxerError {
+export class SearchIndexNotReadyError extends RelayError {
 	constructor(retryAfterSeconds: number) {
 		super({
 			code: APIErrorCodes.SEARCH_INDEX_NOT_READY,

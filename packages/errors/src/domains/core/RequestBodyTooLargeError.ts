@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
-import {statusError} from '@fluxer/errors/src/FluxerError';
+import {APIErrorCodes} from '@relay/constants/src/ApiErrorCodes';
+import {statusError} from '@relay/errors/src/RelayError';
 
 export class RequestBodyTooLargeError extends statusError(413) {
 	constructor(maxSize: number) {

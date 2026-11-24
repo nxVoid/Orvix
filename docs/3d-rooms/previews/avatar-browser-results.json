@@ -1,0 +1,123 @@
+{
+  "version": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/157.0.8103.50",
+    "revision": "@049750111b1e5c11565c792b2aeed5541f332bad",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "jsVersion": "15.7.112.23"
+  },
+  "hardware": {
+    "cores": 16,
+    "deviceMemory": 16,
+    "renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001636) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "initial": {
+    "motion": {
+      "x": 0,
+      "z": 0,
+      "run": false,
+      "rotationY": 0,
+      "cameraYaw": 0.7188299996216245
+    },
+    "failure": false,
+    "metrics": {
+      "drawCalls": 138,
+      "triangles": 21554,
+      "geometries": 37,
+      "textures": 43,
+      "p95FrameMs": 13.100000001490116
+    },
+    "exits": 0,
+    "screenTrack": {},
+    "avatarChecks": [
+      {
+        "model": "robot",
+        "bones": 43,
+        "clipsPresent": true,
+        "walkMovesBones": true,
+        "runMovesBones": true,
+        "reducedWalkMoves": true,
+        "reducedIdleStill": true,
+        "independentSkeleton": true
+      },
+      {
+        "model": "fox",
+        "bones": 24,
+        "clipsPresent": true,
+        "walkMovesBones": true,
+        "runMovesBones": true,
+        "reducedWalkMoves": true,
+        "reducedIdleStill": true,
+        "independentSkeleton": true
+      }
+    ]
+  },
+  "checks": {
+    "movement": true,
+    "typingDoesNotMove": true,
+    "templates": {
+      "gaming": {
+        "drawCalls": 102,
+        "triangles": 15702,
+        "geometries": 37,
+        "textures": 43,
+        "p95FrameMs": 17.400000005960464
+      },
+      "meeting": {
+        "drawCalls": 103,
+        "triangles": 15704,
+        "geometries": 37,
+        "textures": 43,
+        "p95FrameMs": 16.400000005960464
+      },
+      "cinema": {
+        "drawCalls": 105,
+        "triangles": 15728,
+        "geometries": 39,
+        "textures": 43,
+        "p95FrameMs": 15.699999995529652
+      }
+    },
+    "screenTextureMetrics": {
+      "drawCalls": 106,
+      "triangles": 15730,
+      "geometries": 40,
+      "textures": 44,
+      "p95FrameMs": 37
+    },
+    "cleanup": [
+      {
+        "off": 0,
+        "on": 1,
+        "sourceTrackRetained": true
+      },
+      {
+        "off": 0,
+        "on": 1,
+        "sourceTrackRetained": true
+      },
+      {
+        "off": 0,
+        "on": 1,
+        "sourceTrackRetained": true
+      }
+    ],
+    "contextLossHandled": true
+  },
+  "heap": [
+    {
+      "name": "Nodes",
+      "value": 95
+    },
+    {
+      "name": "JSHeapUsedSize",
+      "value": 14638772
+    }
+  ],
+  "errors": [
+    "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+    "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+    "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+    "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+  ]
+}

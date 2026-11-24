@@ -1,0 +1,58 @@
+[
+  {
+    "file": "furniture-bookshelf.glb",
+    "sha256": "028317c5173f7e02106fa1c194fe78c3a054a2d9a9ec7a5ad3abb4e7bc8eeb9d",
+    "bytes": 8172,
+    "license": "CC0-1.0",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/house_interior_pack/Bookshelf.glb"
+  },
+  {
+    "file": "furniture-chair-lounge.glb",
+    "sha256": "375d1668e4e470df8a82170b38b19abe65e7dd7e4c498ebe680ec6e58fcfcfa9",
+    "bytes": 18076,
+    "license": "CC0-1.0",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/house_interior_pack/Chair_2.glb"
+  },
+  {
+    "file": "furniture-chair-office.glb",
+    "sha256": "bdc6aeeb64524bbdccba2f079e6485e2a372aed1c428d976d5da67aadcf18b7a",
+    "bytes": 13360,
+    "license": "CC0-1.0",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/house_interior_pack/Chair_1.glb"
+  },
+  {
+    "file": "furniture-lamp.glb",
+    "sha256": "72d57153e3f1f57e9d920cba1b83fbcd3882cc81769d5ccac64010c04a95b5e8",
+    "bytes": 10112,
+    "license": "CC0-1.0",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/house_interior_pack/Light_Floor1.glb"
+  },
+  {
+    "file": "furniture-plant.glb",
+    "sha256": "a2688ac584953f812d2de9b17cd39ac50010df6b9620a1aa4159ec393102b4e3",
+    "bytes": 10696,
+    "license": "CC0-1.0",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/house_interior_pack/Houseplant_1.glb"
+  },
+  {
+    "file": "furniture-sofa.glb",
+    "sha256": "c75418e4e222e1dfe7cddb42e98f44017cfc051071a81a4072fa153b8fbe7e76",
+    "bytes": 30800,
+    "license": "CC0-1.0",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/house_interior_pack/Couch_Large1.glb"
+  },
+  {
+    "file": "furniture-table-large.glb",
+    "sha256": "863966591cae25d9b7afacd3b60ba999c0c097c2cdffddfa50d1bb176be50eed",
+    "bytes": 23024,
+    "license": "CC0-1.0",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/house_interior_pack/Table_RoundLarge.glb"
+  },
+  {
+    "file": "skyline-building.glb",
+    "sha256": "d3b2454f1adb22db87345cb3d5e903593b76b55640f288de1fecf327086b1549",
+    "bytes": 353968,
+    "license": "CC0-1.0",
+    "source": "https://raw.githubusercontent.com/trebeljahr/quaternius-showcase/0128ca510d653bb04d6d1e4885bd8890b5050b4f/public/glb/buildings_pack_2/Building3_Big.glb"
+  }
+]

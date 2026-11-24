@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {isProfileBadgeKey, MAX_HIDDEN_PROFILE_BADGES} from '@fluxer/constants/src/BadgeConstants';
-import {HexString16Type} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+import {isProfileBadgeKey, MAX_HIDDEN_PROFILE_BADGES} from '@relay/constants/src/BadgeConstants';
+import {HexString16Type} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 export const HiddenProfileBadgesType = z

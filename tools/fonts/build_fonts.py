@@ -248,119 +248,119 @@ class Family:
 LATIN_WEIGHTS = UPRIGHT_WEIGHTS + ITALIC_WEIGHTS
 PLEX_WOFF2 = "fonts/complete/woff2"
 
-LATIN_CORE_STYLESHEETS = ("fluxer-sans.css", "fluxer-mono.css")
+LATIN_CORE_STYLESHEETS = ("relay-sans.css", "relay-mono.css")
 
-ALWAYS_BUNDLED_LATIN_FAMILIES: tuple[str, ...] = ("Fluxer Sans", "Fluxer Mono")
+ALWAYS_BUNDLED_LATIN_FAMILIES: tuple[str, ...] = ("Relay Sans", "Relay Mono")
 
 FAMILIES: tuple[Family, ...] = (
     Family(
-        "FluxerSans",
+        "RelaySans",
         "IBMPlexSans",
         LATIN_WEIGHTS,
         "plex-sans",
         PLEX_WOFF2,
         REBUILD,
         PLEX_GASP,
-        "Fluxer Sans",
-        "fluxer-sans.css",
+        "Relay Sans",
+        "relay-sans.css",
     ),
     Family(
-        "FluxerMono",
+        "RelayMono",
         "IBMPlexMono",
         LATIN_WEIGHTS,
         "plex-mono",
         PLEX_WOFF2,
         REBUILD,
         PLEX_GASP,
-        "Fluxer Mono",
-        "fluxer-mono.css",
+        "Relay Mono",
+        "relay-mono.css",
     ),
     Family(
-        "FluxerSansArabic",
+        "RelaySansArabic",
         "IBMPlexSansArabic",
         UPRIGHT_WEIGHTS,
         "plex-sans-arabic",
         PLEX_WOFF2,
         REBUILD,
         PLEX_GASP,
-        "Fluxer Sans Arabic",
+        "Relay Sans Arabic",
         "script-arabic.css",
     ),
     Family(
-        "FluxerSansDevanagari",
+        "RelaySansDevanagari",
         "IBMPlexSansDevanagari",
         UPRIGHT_WEIGHTS,
         "plex-sans-devanagari",
         PLEX_WOFF2,
         REBUILD,
         PLEX_GASP,
-        "Fluxer Sans Devanagari",
+        "Relay Sans Devanagari",
         "script-devanagari.css",
     ),
     Family(
-        "FluxerSansHebrew",
+        "RelaySansHebrew",
         "IBMPlexSansHebrew",
         UPRIGHT_WEIGHTS,
         "plex-sans-hebrew",
         PLEX_WOFF2,
         REBUILD,
         PLEX_GASP,
-        "Fluxer Sans Hebrew",
+        "Relay Sans Hebrew",
         "script-hebrew.css",
     ),
     Family(
-        "FluxerSansThaiLooped",
+        "RelaySansThaiLooped",
         "IBMPlexSansThaiLooped",
         UPRIGHT_WEIGHTS,
         "plex-sans-thai-looped",
         PLEX_WOFF2,
         REBUILD,
         PLEX_GASP,
-        "Fluxer Sans Thai Looped",
+        "Relay Sans Thai Looped",
         "script-thai-looped.css",
     ),
     Family(
-        "FluxerSansJP",
+        "RelaySansJP",
         "IBMPlexSansJP",
         UPRIGHT_WEIGHTS,
         "plex-sans-jp",
         f"{PLEX_WOFF2}/hinted",
         SUBSET,
         CJK_GASP,
-        "Fluxer Sans JP",
+        "Relay Sans JP",
         "script-jp.css",
     ),
     Family(
-        "FluxerSansSC",
+        "RelaySansSC",
         "IBMPlexSansSC",
         UPRIGHT_WEIGHTS,
         "plex-sans-sc",
         f"{PLEX_WOFF2}/hinted",
         SUBSET,
         CJK_GASP,
-        "Fluxer Sans SC",
+        "Relay Sans SC",
         "script-sc.css",
     ),
     Family(
-        "FluxerSansTC",
+        "RelaySansTC",
         "IBMPlexSansTC",
         UPRIGHT_WEIGHTS,
         "plex-sans-tc",
         f"{PLEX_WOFF2}/hinted",
         SUBSET,
         CJK_GASP,
-        "Fluxer Sans TC",
+        "Relay Sans TC",
         "script-tc.css",
     ),
     Family(
-        "FluxerSansKR",
+        "RelaySansKR",
         "IBMPlexSansKR",
         UPRIGHT_WEIGHTS,
         "plex-sans-kr",
         "ibm-plex-sans-kr/fonts/complete/woff2/unhinted",
         SUBSET,
         PLEX_GASP,
-        "Fluxer Sans KR",
+        "Relay Sans KR",
         "script-kr.css",
     ),
 )
@@ -370,12 +370,12 @@ FAMILY_BY_DIR = {family.out_dir: family for family in FAMILIES}
 KANA_OWNED_BY_JP = frozenset(range(0x3040, 0x3100))
 
 WITHHELD_CODEPOINTS: dict[str, frozenset[int]] = {
-    "FluxerSansSC": KANA_OWNED_BY_JP,
-    "FluxerSansTC": KANA_OWNED_BY_JP,
+    "RelaySansSC": KANA_OWNED_BY_JP,
+    "RelaySansTC": KANA_OWNED_BY_JP,
 }
 
 SOURCE_EXPECTATIONS: dict[str, dict[str, object]] = {
-    "FluxerSansKR": {
+    "RelaySansKR": {
         "sfntVersion": "\x00\x01\x00\x00",
         "tables": {"fpgm": 682, "prep": 329, "cvt ": 46},
         "numGlyphs": 12283,
@@ -387,21 +387,21 @@ SOURCE_EXPECTATIONS: dict[str, dict[str, object]] = {
 ROOT_VARIABLES_TEMPLATE = """:root {{
 \t--font-sans:
 \t\t{sans};
-\t--font-mono: 'Fluxer Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+\t--font-mono: 'Relay Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
 }}
 """
 
 LOCALE_FALLBACKS_COMMENT = ""
 
 SCRIPT_FAMILY_ORDER: tuple[str, ...] = (
-    "Fluxer Sans Arabic",
-    "Fluxer Sans Hebrew",
-    "Fluxer Sans Devanagari",
-    "Fluxer Sans Thai Looped",
-    "Fluxer Sans SC",
-    "Fluxer Sans TC",
-    "Fluxer Sans JP",
-    "Fluxer Sans KR",
+    "Relay Sans Arabic",
+    "Relay Sans Hebrew",
+    "Relay Sans Devanagari",
+    "Relay Sans Thai Looped",
+    "Relay Sans SC",
+    "Relay Sans TC",
+    "Relay Sans JP",
+    "Relay Sans KR",
 )
 
 GENERIC_UI_FACES: tuple[str, ...] = ("system-ui", "-apple-system", "BlinkMacSystemFont")
@@ -410,17 +410,17 @@ GENERIC_UI_FACES: tuple[str, ...] = ("system-ui", "-apple-system", "BlinkMacSyst
 LOCALE_FALLBACKS: tuple[tuple[tuple[str, ...], str, tuple[str, ...]], ...] = (
     (
         ("ja",),
-        "Fluxer Sans JP",
+        "Relay Sans JP",
         ("Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo"),
     ),
-    (("ko",), "Fluxer Sans KR", ("Malgun Gothic", "Apple SD Gothic Neo")),
-    (("zh-CN", "zh-Hans"), "Fluxer Sans SC", ("PingFang SC", "Microsoft YaHei")),
-    (("zh-Hant-TW", "zh-TW"), "Fluxer Sans TC", ("PingFang TC", "Microsoft JhengHei")),
-    (("zh-HK", "zh-Hant-HK"), "Fluxer Sans TC", ("PingFang HK", "Microsoft JhengHei")),
-    (("ar",), "Fluxer Sans Arabic", ("Segoe UI", "Geeza Pro", "Arabic Typesetting")),
-    (("he",), "Fluxer Sans Hebrew", ("Segoe UI", "Arial Hebrew")),
-    (("hi", "mr", "ne", "sa"), "Fluxer Sans Devanagari", ("Nirmala UI", "Noto Sans Devanagari")),
-    (("th",), "Fluxer Sans Thai Looped", ("Leelawadee UI", "Thonburi")),
+    (("ko",), "Relay Sans KR", ("Malgun Gothic", "Apple SD Gothic Neo")),
+    (("zh-CN", "zh-Hans"), "Relay Sans SC", ("PingFang SC", "Microsoft YaHei")),
+    (("zh-Hant-TW", "zh-TW"), "Relay Sans TC", ("PingFang TC", "Microsoft JhengHei")),
+    (("zh-HK", "zh-Hant-HK"), "Relay Sans TC", ("PingFang HK", "Microsoft JhengHei")),
+    (("ar",), "Relay Sans Arabic", ("Segoe UI", "Geeza Pro", "Arabic Typesetting")),
+    (("he",), "Relay Sans Hebrew", ("Segoe UI", "Arial Hebrew")),
+    (("hi", "mr", "ne", "sa"), "Relay Sans Devanagari", ("Nirmala UI", "Noto Sans Devanagari")),
+    (("th",), "Relay Sans Thai Looped", ("Leelawadee UI", "Thonburi")),
 )
 
 
@@ -428,7 +428,7 @@ def font_stack(preferred: str | None, os_faces: tuple[str, ...]) -> list[str]:
     scripts = [preferred] if preferred else []
     scripts += [family for family in SCRIPT_FAMILY_ORDER if family != preferred]
     return [
-        quote_family("Fluxer Sans"),
+        quote_family("Relay Sans"),
         *(quote_family(family) for family in scripts),
         *GENERIC_UI_FACES,
         *(quote_family(face) for face in os_faces),
@@ -475,7 +475,7 @@ def render_locale_fallbacks_stylesheet() -> str:
 
 
 def _http_get(url: str) -> bytes:
-    request = urllib.request.Request(url, headers={"User-Agent": "fluxer-font-build"})
+    request = urllib.request.Request(url, headers={"User-Agent": "orvix-font-build"})
     with urllib.request.urlopen(request) as response:  # noqa: S310 - pinned https URLs
         return response.read()
 
@@ -524,8 +524,8 @@ def _extract_member(archive: object, member: object, name: str, root: Path, is_d
         dest.write_bytes(reader.read())
 
 
-def fluxer_name(value: str) -> str:
-    return value.replace("IBM Plex ", "Fluxer ").replace("IBMPlex", "Fluxer")
+def orvix_name(value: str) -> str:
+    return value.replace("IBM Plex ", "Orvix ").replace("IBMPlex", "Orvix")
 
 
 def _name_map(font: TTFont) -> dict[tuple[int, int, int, int], str]:
@@ -539,7 +539,7 @@ def build_font(src: Path, gasp: dict[int, int]) -> bytes:
     font["gasp"].gaspRange = dict(gasp)
     for record in font["name"].names:
         if record.nameID in RENAME_NAME_IDS:
-            record.string = fluxer_name(record.toUnicode())
+            record.string = orvix_name(record.toUnicode())
     font.flavor = "woff2"
     buffer = io.BytesIO()
     font.save(buffer)
@@ -585,7 +585,7 @@ def check_rebuild(src: Path, produced: bytes, gasp: dict[int, int]) -> None:
         if set(up_names) != set(new_names):
             raise SystemExit(f"{src.name}: name record set changed")
         for key, value in up_names.items():
-            expected = fluxer_name(value) if key[0] in RENAME_NAME_IDS else value
+            expected = orvix_name(value) if key[0] in RENAME_NAME_IDS else value
             if new_names[key] != expected:
                 raise SystemExit(
                     f"{src.name}: name {key} is {new_names[key]!r}, expected {expected!r}"
@@ -679,8 +679,8 @@ def check_subset(
         if metric_signature(parent) != metric_signature(chunk):
             raise SystemExit(f"{label}: vertical metrics changed")
         check_no_reserved_name(chunk, label)
-        if not (chunk["name"].getDebugName(6) or "").startswith("Fluxer"):
-            raise SystemExit(f"{label}: PostScript name is not a Fluxer name")
+        if not (chunk["name"].getDebugName(6) or "").startswith("Orvix"):
+            raise SystemExit(f"{label}: PostScript name is not a Orvix name")
 
         chunk_cmap = chunk.getBestCmap()
         expected = {cp for cp in requested if cp in parent.getBestCmap()}
@@ -751,22 +751,22 @@ def plan_chunks(codepoints: set[int], target: int) -> list[tuple[int, ...]]:
 
 
 TRANSFER_SAMPLES: dict[str, dict[str, str]] = {
-    "FluxerSansJP": {
+    "RelaySansJP": {
         "mixed script": "語",
         "display name": "田中太郎",
         "sentence": "これは日本語のサンプルテキストです",
     },
-    "FluxerSansSC": {
+    "RelaySansSC": {
         "mixed script": "文",
         "display name": "小明",
         "sentence": "这是简体中文的示例文本",
     },
-    "FluxerSansTC": {
+    "RelaySansTC": {
         "mixed script": "文",
         "display name": "小明",
         "sentence": "這是繁體中文的示例文本",
     },
-    "FluxerSansKR": {
+    "RelaySansKR": {
         "mixed script": "한",
         "display name": "김민준",
         "sentence": "이것은 한국어 샘플 텍스트입니다",
@@ -774,10 +774,10 @@ TRANSFER_SAMPLES: dict[str, dict[str, str]] = {
 }
 
 SLICING_DECISION: dict[str, dict[str, float]] = {
-    "FluxerSansJP": {"minMixedScriptRatio": 20.0, "maxFullCoverageRatio": 1.25},
-    "FluxerSansSC": {"minMixedScriptRatio": 20.0, "maxFullCoverageRatio": 1.30},
-    "FluxerSansTC": {"minMixedScriptRatio": 20.0, "maxFullCoverageRatio": 1.50},
-    "FluxerSansKR": {"minMixedScriptRatio": 2.0, "maxFullCoverageRatio": 1.25},
+    "RelaySansJP": {"minMixedScriptRatio": 20.0, "maxFullCoverageRatio": 1.25},
+    "RelaySansSC": {"minMixedScriptRatio": 20.0, "maxFullCoverageRatio": 1.30},
+    "RelaySansTC": {"minMixedScriptRatio": 20.0, "maxFullCoverageRatio": 1.50},
+    "RelaySansKR": {"minMixedScriptRatio": 2.0, "maxFullCoverageRatio": 1.25},
 }
 
 
@@ -1580,8 +1580,8 @@ def verify() -> int:
                 check_no_reserved_name(font, rel)
             except SystemExit as exc:
                 failures.append(str(exc))
-            if not (font["name"].getDebugName(6) or "").startswith("Fluxer"):
-                failures.append(f"{rel}: PostScript name is not a Fluxer name")
+            if not (font["name"].getDebugName(6) or "").startswith("Orvix"):
+                failures.append(f"{rel}: PostScript name is not a Orvix name")
             covered = set(font.getBestCmap())
         finally:
             font.close()

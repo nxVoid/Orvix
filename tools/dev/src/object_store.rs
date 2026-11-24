@@ -10,34 +10,54 @@ use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 pub const S3_BUCKETS: &[&str] = &[
-    "fluxer",
-    "fluxer-uploads",
-    "fluxer-downloads",
-    "fluxer-reports",
-    "fluxer-harvests",
-    "fluxer-static",
+    "orvix",
+    "orvix-uploads",
+    "orvix-downloads",
+    "orvix-reports",
+    "orvix-harvests",
+    "relay-static",
 ];
 
+pub fn s3_buckets() -> Vec<String> {
+    [
+        "CDN",
+        "UPLOADS",
+        "DOWNLOADS",
+        "REPORTS",
+        "HARVESTS",
+        "STATIC",
+    ]
+    .iter()
+    .zip(S3_BUCKETS)
+    .map(|(kind, default)| {
+        env::var(format!("ORVIX_S3_BUCKET_{kind}"))
+            .ok()
+            .filter(|value| !value.trim().is_empty())
+            .unwrap_or_else(|| (*default).to_owned())
+    })
+    .collect()
+}
+
 pub fn s3_endpoint() -> String {
-    env::var("FLUXER_S3_ENDPOINT").unwrap_or_else(|_| "http://127.0.0.1:8333".to_owned())
+    env::var("ORVIX_S3_ENDPOINT").unwrap_or_else(|_| "http://127.0.0.1:8333".to_owned())
 }
 
 pub fn s3_env() -> Vec<(String, Option<String>)> {
     vec![
         (
             "AWS_ACCESS_KEY_ID".to_owned(),
-            Some(env::var("FLUXER_S3_ACCESS_KEY_ID").unwrap_or_else(|_| "fluxer".to_owned())),
+            Some(env::var("ORVIX_S3_ACCESS_KEY_ID").unwrap_or_else(|_| "orvix".to_owned())),
         ),
         (
             "AWS_SECRET_ACCESS_KEY".to_owned(),
             Some(
-                env::var("FLUXER_S3_SECRET_ACCESS_KEY")
-                    .unwrap_or_else(|_| "fluxer-secret".to_owned()),
+                env::var("ORVIX_S3_SECRET_ACCESS_KEY")
+                    .unwrap_or_else(|_| "orvix-secret".to_owned()),
             ),
         ),
         (
             "AWS_DEFAULT_REGION".to_owned(),
-            Some(env::var("FLUXER_S3_REGION").unwrap_or_else(|_| "us-east-1".to_owned())),
+            Some(env::var("ORVIX_S3_REGION").unwrap_or_else(|_| "us-east-1".to_owned())),
         ),
     ]
 }
@@ -71,8 +91,8 @@ pub async fn wait_s3_api(timeout_secs: u64) -> Result<()> {
 pub fn ensure_s3_buckets() -> Result<()> {
     let endpoint = s3_endpoint();
     let env = s3_env();
-    for bucket in S3_BUCKETS {
-        ensure_s3_bucket(&endpoint, &env, bucket)?;
+    for bucket in s3_buckets() {
+        ensure_s3_bucket(&endpoint, &env, &bucket)?;
     }
     Ok(())
 }
@@ -176,5 +196,5 @@ pub async fn bootstrap_schema() -> Result<()> {
 }
 
 fn cassandra_backend_enabled() -> bool {
-    env::var("FLUXER_DATABASE_BACKEND").as_deref() == Ok("cassandra")
+    env::var("ORVIX_DATABASE_BACKEND").as_deref() == Ok("cassandra")
 }

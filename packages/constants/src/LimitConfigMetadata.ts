@@ -5,7 +5,7 @@ import {
 	MAX_BIO_LENGTH,
 	MAX_SCREEN_SHARE_BITRATE_CEILING,
 	MIN_SCREEN_SHARE_BITRATE_CEILING,
-} from '@fluxer/constants/src/LimitConstants';
+} from '@relay/constants/src/LimitConstants';
 
 export const LIMIT_KEYS = [
 	'avatar_max_size',
@@ -371,7 +371,7 @@ export const LIMIT_KEY_METADATA: Record<LimitKey, LimitKeyMetadata> = {
 		key: 'max_attachment_file_size',
 		label: 'Max Attachment File Size',
 		description:
-			'Maximum size of each attachment file. The upload relay limit FLUXER_MEDIA_PROXY_UPLOAD_RELAY_MAX_BODY_BYTES applies to each upload part, so it only matters for files above about 10 GB',
+			'Maximum size of each attachment file. The upload relay limit ORVIX_MEDIA_PROXY_UPLOAD_RELAY_MAX_BODY_BYTES applies to each upload part, so it only matters for files above about 10 GB',
 		category: 'files',
 		scope: 'both',
 		isToggle: false,

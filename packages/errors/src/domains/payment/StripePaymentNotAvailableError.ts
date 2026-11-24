@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
-import {FluxerError} from '@fluxer/errors/src/FluxerError';
+import {APIErrorCodes} from '@relay/constants/src/ApiErrorCodes';
+import {RelayError} from '@relay/errors/src/RelayError';
 
-export class StripePaymentNotAvailableError extends FluxerError {
+export class StripePaymentNotAvailableError extends RelayError {
 	constructor() {
 		super({
 			code: APIErrorCodes.STRIPE_PAYMENT_NOT_AVAILABLE,

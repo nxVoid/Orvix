@@ -1,0 +1,821 @@
+/**
+ * @module src/voice/gateway/GatewayHandler
+ * @description Handles all gateway events relevant to voice state
+ * tracking, 24/7 mode, boot recovery, presence rotation, and permission
+ * checks. Base class file: constructor & state, raw WS listener, presence
+ * rotation, event registration, READY sequencing and 24/7 boot recovery.
+ * Voice-state routing, guild sync and rejoin management live in sibling
+ * mixin modules applied onto the prototype at the bottom of this file.
+ */
+import { Events, GatewayOpcodes } from "@fluxerjs/core";
+import { logger, _wsErrorCooldown } from "../../core/Logger.mjs";
+import { ServerSettings } from "../../db/Settings.mjs";
+import { get247ChannelMode } from "../../utils/Helpers247.mjs";
+import { cleanId } from "../../utils/Utils.mjs";
+import * as ShardingUtils from "../../utils/ShardingUtils.mjs";
+import { iterateVoiceStates, resolveIsBotUser } from "../VoiceStateResolver.mjs";
+import { applyMixins } from "../../utils/mixins.mjs";
+import VoiceStateRouting from "./VoiceStateRouting.mjs";
+import GuildSync from "./GuildSync.mjs";
+import RejoinManager from "./RejoinManager.mjs";
+import Watchdog247 from "./Watchdog247.mjs";
+import RejoinBackoff from "./RejoinBackoff.mjs";
+
+const RAW_GATEWAY_INTEREST =
+    /"(?:t|op)":\s*(?:"(?:VOICE_STATE_UPDATE|VOICE_SERVER_UPDATE|GUILD_CREATE|READY|RESUMED|MESSAGE_CREATE)"|(?:0|7|9|10|11|12)\b)/;
+
+/** @class GatewayHandler @description Handles all gateway events relevant to voice state tracking, 24/7 mode, boot recovery, presence rotation, and permission checks. Key responsibilities include voice state cache seeding and updates, bot move-away detection with 24/7 rejoin scheduling, boot recovery with sequential rejoin of 24/7 channels, inactivity timer management on human join/leave, and guild create/delete handling with startup grace period. */
+class GatewayHandler {
+  /**
+   * Create a new GatewayHandler.
+   * @param {import('../../core/Bot.mjs').Remix} remix - The bot context.
+   */
+  constructor(remix) {
+    this.remix = remix;
+
+    const timers = remix.config.timers ?? {};
+    this.T = {
+      aloneCheckDebounce: timers.aloneCheckDebounce ?? 500,
+      rejoin247Delay:     timers.rejoin247Delay     ?? 3_000,
+    };
+
+    this.presenceContents = remix.config.presenceContents ?? [];
+    this.presenceInterval = remix.config.presenceInterval ?? 30_000;
+
+    this.rejoinBackoff = new RejoinBackoff();
+
+    this.wsListenerAttached = false;
+    this.presenceTimer = null;
+    this.presenceIndex = 0;
+
+    this._prevVoiceState = new Map();
+
+    this._deferredGuildDeletes = new Map();
+    this._startupDeleteGraceMs = 15_000;
+    this._inStartupGrace = true;
+    this._deferredDeleteCount = 0;
+
+    this._lastReadyAt = 0;
+    this._wsReconnectGraceMs = 30_000;
+    this._moveEvidenceWindowMs = 10_000;
+  }
+
+  /** @private @type {Set<string>} @description Channel IDs currently being rejoined (duplicate guard). */
+  _rejoinInProgress = new Set();
+
+  /** @private @type {Map<string, number>} @description Channel ID → retry count for exponential backoff. */
+  _rejoinAttempts = new Map();
+
+  /** @private @type {boolean} @description Whether boot recovery is actively rejoining 24/7 channels. */
+  _bootRecoveryActive = false;
+
+  /** @type {number} @description Maximum number of rejoin retry attempts per channel. */
+  static MAX_REJOIN_RETRIES = 3;
+
+  /**
+   * Check whether a WebSocket reconnect happened recently (within 30s).
+   * Used to treat transient disconnects as non-24/7-requiring.
+   * @returns {boolean}
+   */
+  isWsReconnectRecent() {
+    if (!this._lastReadyAt) return false;
+    return Date.now() - this._lastReadyAt < this._wsReconnectGraceMs;
+  }
+
+  /** @private Build a composite bot key for voice state tracking. @param {string} userId @param {string} guildId @returns {string|null} */
+  getObservedVoiceBotKey(userId, guildId) {
+    const cleanUserId = cleanId(userId ?? "");
+    const cleanGuildId = cleanId(guildId ?? "");
+    return cleanUserId && cleanGuildId ? `${cleanGuildId}:${cleanUserId}` : cleanUserId || null;
+  }
+
+  /** @private Build a previous voice state lookup key. @param {string} userId @param {string} guildId @returns {string|null} */
+  getPrevVoiceStateKey(userId, guildId) {
+    const cleanUserId = cleanId(userId ?? "");
+    const cleanGuildId = cleanId(guildId ?? "");
+    return cleanUserId && cleanGuildId ? `${cleanGuildId}:${cleanUserId}` : null;
+  }
+
+  /** Find a previous voice state entry for a user. @param {string} userId @param {string|null} [guildId=null] @returns {{key: string|null, value: object|null}} */
+  findPrevVoiceStateEntry(userId, guildId = null) {
+    const directKey = this.getPrevVoiceStateKey(userId, guildId);
+    if (directKey && this._prevVoiceState.has(directKey)) {
+      return { key: directKey, value: this._prevVoiceState.get(directKey) };
+    }
+
+    const cleanUserId = cleanId(userId ?? "");
+    if (!cleanUserId) return { key: null, value: null };
+
+    for (const [key, value] of this._prevVoiceState) {
+      if (key.endsWith(`:${cleanUserId}`)) {
+        return { key, value };
+      }
+    }
+
+    return { key: null, value: null };
+  }
+
+  /** Attach a raw WebSocket listener to cache VOICE_SERVER_UPDATE events. @private */
+  attachRawListener() {
+    const { remix } = this;
+    const client = remix.client;
+
+    try {
+      const wsObjs = ShardingUtils.localShardSockets(client);
+
+      if (!remix._rawGatewayWsObjs) remix._rawGatewayWsObjs = new Set();
+      const attached = remix._rawGatewayWsObjs;
+
+      for (const old of attached) {
+        if (wsObjs.includes(old)) continue;
+        try {
+          if (typeof old.removeEventListener === "function") {
+            old.removeEventListener("message", remix._rawGatewayMessageListener ?? remix._rawGatewayHandler);
+            old.removeEventListener("error",   remix._rawGatewayErrorHandler);
+            old.removeEventListener("close",   remix._rawGatewayCloseHandler);
+          } else if (typeof old.off === "function") {
+            old.off("message", remix._rawGatewayMessageListener ?? remix._rawGatewayHandler);
+            old.off("error",   remix._rawGatewayErrorHandler);
+            old.off("close",   remix._rawGatewayCloseHandler);
+          }
+        } catch(e) { logger.warn("[Gateway] Failed to detach old WS listener:", e?.message); }
+        attached.delete(old);
+      }
+
+      let attachedNew = false;
+
+      if (!remix._rawGatewayHandler) {
+        remix._rawGatewayHandler = (data) => {
+          try {
+            const client = remix.client;
+            if (typeof data === "string" && !RAW_GATEWAY_INTEREST.test(data)) return;
+            const payload = typeof data === "string" ? JSON.parse(data) : data;
+
+            /* Opcode 11 (Heartbeat ACK): confirms the gateway received and acknowledged bot heartbeat */
+            if (payload?.op === GatewayOpcodes.HeartbeatAck || payload?.op === 11) {
+              remix._lastGatewayHeartbeat = Date.now();
+              remix._gatewayConnected = true;
+              remix._lastGatewayDisconnect = 0;
+              return;
+            }
+
+            if (payload?.op === GatewayOpcodes.GatewayError || payload?.op === 12) {
+              logger.warn("[Gateway] GatewayError (12) received from Fluxer:", payload.d);
+              remix._gatewayConnected = false;
+              if (!remix._lastGatewayDisconnect) remix._lastGatewayDisconnect = Date.now();
+              return;
+            }
+
+            if (payload?.op === GatewayOpcodes.Hello || payload?.op === 10) {
+              logger.player(`[Gateway] HELLO received (heartbeat ${payload.d?.heartbeat_interval ?? "unknown"}ms)`);
+              remix._gatewayConnected = true;
+              return;
+            }
+
+            /* Opcode 7 (Reconnect): Gateway requests immediate close and resume */
+            if (payload?.op === GatewayOpcodes.Reconnect || payload?.op === 7) {
+              logger.player("[Gateway] RECONNECT (op 7) requested by gateway — terminating socket to trigger reconnect.");
+              remix._gatewayConnected = false;
+              if (!remix._lastGatewayDisconnect) remix._lastGatewayDisconnect = Date.now();
+              this._lastReadyAt = 0;
+              const wsObjs = ShardingUtils.localShardSockets(client);
+              for (const ws of wsObjs) {
+                try {
+                  if (typeof ws?.close === "function") ws.close(4000, "Gateway requested reconnect");
+                  else if (typeof ws?.terminate === "function") ws.terminate();
+                } catch (_) {}
+              }
+              setTimeout(() => {
+                for (const [id, shard] of ShardingUtils.getLocalShards(client)) {
+                  try {
+                    if (typeof shard.connect === "function") shard.connect();
+                    else if (typeof shard.reconnect === "function") shard.reconnect();
+                  } catch (_) {}
+                }
+              }, 1_000).unref?.();
+              return;
+            }
+
+            /* Opcode 9 (InvalidSession): Session invalidated by gateway */
+            if (payload?.op === GatewayOpcodes.InvalidSession || payload?.op === 9) {
+              const canResume = Boolean(payload.d);
+              logger.player(`[Gateway] INVALID_SESSION (op 9, resumable=${canResume}) received from gateway.`);
+              remix._gatewayConnected = false;
+              if (!remix._lastGatewayDisconnect) remix._lastGatewayDisconnect = Date.now();
+              this._lastReadyAt = 0;
+              if (!canResume) {
+                for (const [id, shard] of ShardingUtils.getLocalShards(client)) {
+                  try {
+                    if (shard.sessionId) shard.sessionId = null;
+                    if (shard.session_id) shard.session_id = null;
+                    if (shard.resumeGatewayUrl) shard.resumeGatewayUrl = null;
+                  } catch (_) {}
+                }
+              }
+              const wsObjs = ShardingUtils.localShardSockets(client);
+              for (const ws of wsObjs) {
+                try {
+                  if (typeof ws?.close === "function") ws.close(canResume ? 4000 : 1000, "Invalid session");
+                  else if (typeof ws?.terminate === "function") ws.terminate();
+                } catch (_) {}
+              }
+              setTimeout(() => {
+                for (const [id, shard] of ShardingUtils.getLocalShards(client)) {
+                  try {
+                    if (typeof shard.connect === "function") shard.connect();
+                    else if (typeof shard.reconnect === "function") shard.reconnect();
+                  } catch (_) {}
+                }
+              }, 1_500).unref?.();
+              return;
+            }
+
+            if (payload?.op !== 0) return;
+
+            /* Genuine Dispatch event (op 0) — gateway is actively delivering traffic */
+            remix._lastGatewayHeartbeat = Date.now();
+            remix._gatewayConnected = true;
+            remix._lastGatewayDisconnect = 0;
+
+            if (payload.t === "READY") {
+              remix.statusChannel?.resolveIncident("gateway");
+              logger.player(`[Gateway] READY received (session ${payload.d?.session_id ?? "unknown"})`);
+              this._lastReadyAt = Date.now();
+              remix._lastGatewayHeartbeat = Date.now();
+              remix._gatewayConnected = true;
+              this.rejoinBackoff?.clear?.();
+              const readyGuilds = payload.d?.guilds;
+              if (Array.isArray(readyGuilds)) {
+                for (const g of readyGuilds) {
+                  const gId = g?.id;
+                  if (!gId || !Array.isArray(g.voice_states)) continue;
+                  for (const state of g.voice_states) {
+                    const userId    = state.user_id;
+                    const channelId = state.channel_id;
+                    if (!userId || !channelId) continue;
+                    const isBot  = resolveIsBotUser({ userId, member: state.member, guild: client.guilds?.get?.(gId), client, botId: client.user?.id });
+                    remix.voiceCache.updateUser({ guildId: gId, userId, channelId, isBot });
+                  }
+                }
+              }
+
+              if (remix._hasBooted) {
+                logger.voice247("[Gateway] Re-READY after gateway reconnection — scheduling 24/7 self-healing sweep in 3s...");
+                setTimeout(() => {
+                  if (typeof this._sweep247Channels === "function") {
+                    this._sweep247Channels().catch(err => {
+                      logger.warn("[Watchdog247] Post-reconnect sweep failed:", err?.message ?? err);
+                    });
+                  }
+                  if (remix.players?.resumeAllOnNodeReconnect) {
+                    remix.players.resumeAllOnNodeReconnect();
+                  }
+                }, 3_000).unref?.();
+              }
+            }
+
+            if (payload.t === "RESUMED") {
+              remix.statusChannel?.resolveIncident("gateway");
+              logger.player("[Gateway] RESUMED received from gateway.");
+              this._lastReadyAt = Date.now();
+              remix._lastGatewayHeartbeat = Date.now();
+              remix._gatewayConnected = true;
+              this.rejoinBackoff?.clear?.();
+
+              if (remix._hasBooted) {
+                logger.voice247("[Gateway] RESUMED session active — scheduling 24/7 self-healing sweep in 3s...");
+                setTimeout(() => {
+                  if (typeof this._sweep247Channels === "function") {
+                    this._sweep247Channels().catch(err => {
+                      logger.warn("[Watchdog247] Post-resume sweep failed:", err?.message ?? err);
+                    });
+                  }
+                  if (remix.players?.resumeAllOnNodeReconnect) {
+                    remix.players.resumeAllOnNodeReconnect();
+                  }
+                }, 3_000).unref?.();
+              }
+            }
+
+            if (payload.t === "GUILD_CREATE") {
+              const d           = payload.d;
+              const gId         = d?.id;
+              const voiceStates = d?.voice_states;
+              if (gId && Array.isArray(voiceStates) && voiceStates.length > 0) {
+                for (const state of voiceStates) {
+                  const userId    = state.user_id;
+                  const channelId = state.channel_id;
+                  if (!userId || !channelId) continue;
+                  const isBot  = resolveIsBotUser({ userId, member: state.member, guild: client.guilds?.get?.(gId), client, botId: client.user?.id });
+                  remix.voiceCache.updateUser({ guildId: gId, userId, channelId, isBot });
+                }
+              }
+            }
+
+            if (payload.t === "VOICE_SERVER_UPDATE") {
+              logger.voiceState(`[Gateway] VOICE_SERVER_UPDATE guild=${payload.d?.guild_id ?? "dm"} endpoint=${payload.d?.endpoint ?? "unknown"}`);
+            }
+
+            if (payload.t === "VOICE_STATE_UPDATE") {
+              const d         = payload.d;
+              const userId    = cleanId(d?.user_id ?? d?.userId);
+              const channelId = cleanId(d?.channel_id ?? d?.channelId) || null;
+              const guildId   = cleanId(d?.guild_id ?? d?.guildId);
+              const isBot     = resolveIsBotUser({ userId, member: d?.member, guild: client.guilds?.get?.(guildId), client, botId: client.user?.id });
+              if (!userId) return;
+              if (channelId) {
+                remix.voiceCache.updateUser({ guildId, userId, channelId, isBot });
+              } else {
+                remix.voiceCache.updateUser({ guildId, userId, channelId: null, isBot });
+              }
+              try {
+                this._handleVoiceStateUpdate(d);
+              } catch (e) {
+                logger.warn("[Gateway] Error in _handleVoiceStateUpdate from raw event:", e?.message);
+              }
+            }
+          } catch(e) { logger.warn("[Gateway] Raw gateway handler error:", e?.message); }
+        };
+
+        remix._rawGatewayErrorHandler = (errOrEvent) => {
+          if (typeof errOrEvent?.preventDefault === "function") errOrEvent.preventDefault();
+          const err = errOrEvent?.error ?? errOrEvent?.message ?? errOrEvent;
+          const now = Date.now();
+          if (now - _wsErrorCooldown.lastLogged < _wsErrorCooldown.COOLDOWN_MS) return;
+          _wsErrorCooldown.lastLogged = now;
+          logger.player("[Gateway] Raw WS socket error (will reconnect):", err?.message ?? err);
+        };
+        remix._rawGatewayCloseHandler = (eventOrCode, maybeReason) => {
+          const code = eventOrCode?.code ?? (typeof eventOrCode === "number" ? eventOrCode : "unknown");
+          const reason = eventOrCode?.reason ?? maybeReason ?? "";
+          remix._gatewayConnected = false;
+          if (!remix._lastGatewayDisconnect) remix._lastGatewayDisconnect = Date.now();
+          remix.statusChannel?.triggerIncident("gateway", `Gateway WebSocket closed (code=${code}). Reconnecting...`);
+          const now = Date.now();
+          if (now - _wsErrorCooldown.lastLogged >= _wsErrorCooldown.COOLDOWN_MS) {
+            _wsErrorCooldown.lastLogged = now;
+            logger.player(`[Gateway] Raw WebSocket closed (code=${code}, reason=${reason || "none"}) — proactively reconnecting shards.`);
+          }
+          /* Immediately attempt proactive shard reconnect */
+          for (const [id, shard] of ShardingUtils.getLocalShards(remix.client)) {
+            try {
+              if (typeof shard.connect === "function") shard.connect();
+              else if (typeof shard.reconnect === "function") shard.reconnect();
+              else if (typeof shard.ws?.connect === "function") shard.ws.connect();
+            } catch (_) {}
+          }
+        };
+        remix._rawGatewayMessageListener = (event) => remix._rawGatewayHandler(event?.data ?? event);
+      }
+
+      for (const wsObj of wsObjs) {
+        if (attached.has(wsObj)) continue;
+
+        if (typeof wsObj.addEventListener === "function") {
+          wsObj.addEventListener("message", remix._rawGatewayMessageListener);
+          wsObj.addEventListener("error",   remix._rawGatewayErrorHandler);
+          wsObj.addEventListener("close",   remix._rawGatewayCloseHandler);
+        } else if (typeof wsObj.on === "function") {
+          wsObj.on("message", remix._rawGatewayMessageListener);
+          wsObj.on("error",   remix._rawGatewayErrorHandler);
+          wsObj.on("close",   remix._rawGatewayCloseHandler);
+        }
+
+        attached.add(wsObj);
+        attachedNew = true;
+      }
+
+      remix._rawGatewayWsObj = wsObjs[0] ?? null;
+      this.wsListenerAttached = attached.size > 0;
+      if (attachedNew) {
+        logger.player("[Gateway] Raw WS listener attached to new socket.");
+      }
+    } catch(e) { logger.warn("[Gateway] attachRawListener failed:", e?.message); }
+  }
+
+  /** Rotate the bot's presence/status text at a configured interval. @private */
+  setupPresenceRotation() {
+    if (this.presenceContents.length === 0) return;
+
+    const { remix } = this;
+    const client = remix.client;
+
+    const setPresence = () => {
+      const entry = this.presenceContents[this.presenceIndex];
+
+      const isObj = typeof entry === "object" && entry !== null;
+
+      const custom_status = {};
+      if (isObj) {
+        if (entry.text)       custom_status.text       = entry.text;
+        if (entry.emoji_name) custom_status.emoji_name  = entry.emoji_name;
+        if (entry.emoji_id)   custom_status.emoji_id    = entry.emoji_id;
+      } else {
+        custom_status.text = String(entry);
+      }
+
+      const presence = {
+        status:        "online",
+        mobile:        false,
+        afk:           false,
+        custom_status,
+      };
+
+      if (isObj && entry.activity) {
+        presence.activities = [{
+          name: entry.activity.name ?? "music",
+          type: entry.activity.type ?? 0,
+          url:  entry.activity.url  ?? undefined,
+        }];
+      }
+
+      try {
+        if (client.ws?.send) {
+          for (const id of ShardingUtils.localShardIds(client)) {
+            client.ws.send(id, { op: GatewayOpcodes.PresenceUpdate, d: presence });
+          }
+        } else {
+          const shard = ShardingUtils.getShard(client, 0);
+          if (shard) shard.send({ op: GatewayOpcodes.PresenceUpdate, d: presence });
+        }
+      } catch (e) {
+        logger.warn("[Presence] Gateway not ready, skipping rotation update:", e?.message);
+      }
+      this.presenceIndex = (this.presenceIndex + 1) % this.presenceContents.length;
+    };
+    setPresence();
+    if (this.presenceTimer) clearInterval(this.presenceTimer);
+    this.presenceTimer = setInterval(setPresence, this.presenceInterval);
+  }
+
+  /**
+   * Register all gateway event handlers (GuildCreate, GuildDelete, VoiceStateUpdate, VoiceStatesSync).
+   * Called once during bot initialisation.
+   */
+  setupEventHandlers() {
+    const { remix } = this;
+    const client = remix.client;
+
+    client.on(Events.GuildCreate, async (guild) => {
+      const guildId = guild?.id ?? guild?._id;
+      if (!guildId) return;
+
+      const deferred = this._deferredGuildDeletes.get(guildId);
+      if (deferred) {
+        clearTimeout(deferred.timer);
+        this._deferredGuildDeletes.delete(guildId);
+        logger.guild(
+            `[GuildDelete] Cancelled deferred cleanup for server ${guildId} — ` +
+            `guild came back (GuildCreate received during grace period).`
+        );
+      }
+
+      const voiceStatesRaw =
+          guild.voice_states ??
+          guild.voiceStates ??
+          null;
+
+      if (voiceStatesRaw) {
+        const newUserIds = new Set();
+        for (const vs of iterateVoiceStates(guild, { client: remix.client, botId: remix.client?.user?.id })) {
+          newUserIds.add(vs.userId);
+        }
+        remix.voiceCache.purgeUsersInGuild(guildId, newUserIds);
+      }
+      if (voiceStatesRaw) {
+        for (const vs of iterateVoiceStates(guild, { client: remix.client, botId: remix.client?.user?.id })) {
+          remix.voiceCache.updateUser({ guildId, userId: vs.userId, channelId: vs.channelId, isBot: vs.isBot });
+        }
+      }
+
+      if (!remix.settingsMgr.guilds.has(guildId)) {
+        logger.guild(`[GuildCreate] (Re-)joined server ${guildId} — initialising settings.`);
+        try {
+          const cleanGuildId = cleanId(guildId);
+          if (!cleanGuildId) throw new Error("Invalid guildId: " + guildId);
+          const res = await remix.settingsMgr.selectGuild(cleanGuildId);
+          if (res?.results?.length) {
+            const row    = res.results[0];
+            const server = new ServerSettings(guildId, remix.settingsMgr);
+            const parsed = (typeof row.data === "string") ? JSON.parse(row.data) : row.data;
+            server.deserialize(parsed);
+            server.checkDefaults(remix.settingsMgr.defaults);
+            remix.settingsMgr.guilds.set(guildId, server);
+            logger.guild(`[GuildCreate] Restored existing settings for server ${guildId}.`);
+          } else {
+            const server = new ServerSettings(guildId, remix.settingsMgr);
+            server.checkDefaults(remix.settingsMgr.defaults);
+            remix.settingsMgr.guilds.set(guildId, server);
+            await remix.settingsMgr.create(guildId, server);
+            logger.guild(`[GuildCreate] Fresh settings initialised for server ${guildId}.`);
+          }
+        } catch (err) {
+          logger.warn("[GuildCreate] Settings init failed for", guildId, err.message);
+        }
+      }
+
+      this._checkGuildPermissions(guild, guildId).catch(e => logger.warn("[GuildCreate] Permission check error for", guildId, e.message));
+
+    });
+
+    client.on(Events.GuildDelete, (guild) => {
+      const guildId = guild?.id ?? guild?._id;
+      if (!guildId) return;
+
+      if (this._inStartupGrace) {
+        this._deferredDeleteCount++;
+        if (this._deferredDeleteCount <= 3) {
+          logger.guild(
+              `[GuildDelete] Deferring cleanup for server ${guildId} ` +
+              `(startup grace — will confirm after ${this._startupDeleteGraceMs / 1000}s).`
+          );
+        }
+        const existing = this._deferredGuildDeletes.get(guildId);
+        if (existing) clearTimeout(existing.timer);
+
+        const timer = setTimeout(() => {
+          this._deferredGuildDeletes.delete(guildId);
+          this._processGuildDelete(guildId);
+        }, this._startupDeleteGraceMs);
+
+        this._deferredGuildDeletes.set(guildId, { guild, timer });
+        return;
+      }
+
+      logger.guild(`[GuildDelete] Received GuildDelete for server ${guildId}.`);
+      this._processGuildDelete(guildId);
+    });
+
+    client.on(Events.VoiceStateUpdate, async (oldOrNew, maybeNew) => {
+      const data = maybeNew ?? oldOrNew;
+      const extra = maybeNew ? oldOrNew : null;
+      this._handleVoiceStateUpdate(data, extra);
+    });
+
+    client.on(Events.VoiceStatesSync, (data) => {
+      this._handleVoiceStatesSync(data);
+    });
+
+    client.on(Events.ChannelDelete ?? "channelDelete", (channel) => {
+      this._handleChannelDelete(channel);
+    });
+  }
+
+  _handleChannelDelete(channel) {
+    const channelId = cleanId(channel?.id ?? channel?._id);
+    if (!channelId) return;
+
+    const { remix } = this;
+    const guildId = cleanId(channel?.guildId ?? channel?.guild?.id ?? "");
+
+    const player = remix?.players?.playerMap?.get?.(channelId)
+      ?? [...(remix?.players?.playerMap?.values?.() ?? [])].find(p => cleanId(p?._channelId) === channelId || cleanId(p?._home247Channel) === channelId);
+
+    if (player) {
+      logger.voice(`[ChannelDelete] Voice channel ${channelId} deleted — destroying associated player.`);
+      remix.players.playerMap.delete(channelId);
+      const homeCh = cleanId(player._home247Channel ?? "");
+      if (homeCh && homeCh !== channelId) remix.players.playerMap.delete(homeCh);
+      remix.players._unindexPlayer?.(player._guildId, channelId);
+
+      const pendingScrobble = remix.players._pendingScrobbleTimers?.get?.(channelId);
+      if (pendingScrobble) {
+        clearTimeout(pendingScrobble.timer);
+        remix.players._pendingScrobbleTimers.delete(channelId);
+      }
+
+      try {
+        player.queue?.reset?.();
+        player.destroy();
+      } catch (e) {
+        logger.warn("[ChannelDelete] Player destroy error:", e?.message);
+      }
+    }
+
+    try {
+      if (guildId) {
+        remix.voiceCache?.removeChannel?.(guildId, channelId);
+      }
+    } catch (_) {}
+  }
+
+  /**
+   * Called when the bot receives the READY event.
+   * Seeds voice states, starts presence rotation, ends startup grace period,
+   * and begins 24/7 boot recovery.
+   */
+  onReady() {
+    this._lastReadyAt = Date.now();
+    this._graceStartedAt = Date.now();
+    this.seedVoiceStatesFromGuilds();
+    this.seedGuildsFromRest().catch(e => logger.warn("[onReady] seedGuildsFromRest error:", e.message));
+    this.attachRawListener();
+
+    this.setupPresenceRotation();
+
+    setTimeout(() => {
+      this._inStartupGrace = false;
+      const pending = this._deferredGuildDeletes.size;
+      if (pending > 0) {
+        logger.guild(
+            `[GuildDelete] Startup grace period ended. ` +
+            `${pending} deferred deletion(s) confirmed — cleaning up.`
+        );
+      } else {
+        logger.guild(`[GuildDelete] Startup grace period ended. No deferred deletions.`);
+      }
+      if (this._deferredDeleteCount > 3) {
+        logger.guild(
+            `[GuildDelete] (Suppressed ${this._deferredDeleteCount - 3} deferral log lines for brevity)`
+        );
+      }
+    }, this._startupDeleteGraceMs);
+
+    this.rejoin247Channels();
+    this.start247Watchdog();
+
+    try {
+      this.remix.restorePlayerState?.().catch?.((e) =>
+          logger.warn("[Restore] Player state restore failed:", e?.message));
+    } catch (e) {
+      logger.warn("[Restore] Player state restore could not start:", e?.message);
+    }
+  }
+
+  /**
+   * Boot recovery: sequentially rejoin all saved 24/7 channels.
+   * Sets _bootRecoveryActive=true to suppress fake move events during the process.
+   * Cleans up missing channels from settings to prevent repeated failures.
+   * @returns {Promise<void>}
+   */
+  async rejoin247Channels() {
+    this._bootRecoveryActive = true;
+    try {
+      await this._rejoin247ChannelsInner();
+    } catch (err) {
+      logger.warn("[BootRecovery] 24/7 boot recovery crashed:", err?.message ?? err);
+    } finally {
+      this._bootRecoveryActive = false;
+    }
+  }
+
+  /** @private Inner boot-recovery loop. The flag reset is handled by the caller's finally block. */
+  async _rejoin247ChannelsInner() {
+    const { remix } = this;
+    const channelsToRejoin = [];
+
+    for (const [guildId, serverSettings] of remix.settingsMgr.guilds) {
+      const raw = serverSettings.get("stay_247");
+      if (!raw || raw === "none") continue;
+
+      const rawArr = Array.isArray(raw) ? raw : [raw];
+      const channels = rawArr
+          .map(id => cleanId(id))
+          .filter(id => id.length >= 15 && id.length <= 22);
+
+      for (const channelId of channels) {
+        const mode = get247ChannelMode(serverSettings, channelId);
+        if (mode === "on") {
+          channelsToRejoin.push({ guildId, channelId, mode });
+        }
+      }
+    }
+
+    if (channelsToRejoin.length === 0) {
+      logger.voice247("[BootRecovery] No 24/7 channels to rejoin.");
+      return;
+    }
+
+    /* Ensure backoff cooldowns from previous session/downtime are reset */
+    this.rejoinBackoff?.clear?.();
+
+    /* Wait for gateway to establish connection so voice joins do not immediately time out */
+    if (remix._gatewayConnected === false) {
+      logger.voice247("[BootRecovery] Waiting up to 30s for gateway connection before rejoining 24/7 channels...");
+      const startWait = Date.now();
+      while (remix._gatewayConnected === false && Date.now() - startWait < 30_000) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+
+    try {
+      const lava = remix.lavalink;
+      if (lava?.hasConnectedNode && !lava.hasConnectedNode() && lava.waitForNode) {
+        logger.voice247("[BootRecovery] Waiting up to 90s for the Lavalink node to connect...");
+        await lava.waitForNode({ timeoutMs: 90_000, intervalMs: 2_000 }).catch(() => {
+          logger.warn("[BootRecovery] Lavalink still not connected — attempting rejoins anyway (watchdog will retry).");
+        });
+      }
+    } catch (_) { /* best effort */ }
+
+    logger.voice247(
+        `[BootRecovery] Found ${channelsToRejoin.length} 24/7 channel(s) to rejoin: ` +
+        channelsToRejoin.map(c => `${c.channelId}(${c.mode})`).join(", ")
+    );
+
+    const baseStagger = remix.config?.timers?.bootRejoinStagger ?? 5_000;
+
+    for (let i = 0; i < channelsToRejoin.length; i++) {
+      const { guildId, channelId, mode } = channelsToRejoin[i];
+      const cleanG = cleanId(guildId);
+      const cleanC = cleanId(channelId);
+
+      let guild = remix.client?.guilds?.get?.(cleanG);
+      if (!guild && typeof remix.client?.guilds?.fetch === "function") {
+        try { guild = await remix.client.guilds.fetch(cleanG).catch(() => null); } catch (_) {}
+      }
+      if (!guild) {
+        const { channel: chCheck } = await this._resolve247Channel(cleanC);
+        if (chCheck) {
+          guild = chCheck.guild ?? { id: cleanG };
+        }
+      }
+      if (!guild) {
+        logger.voice247(
+            `[BootRecovery] Bot is not currently in guild ${cleanG} — skipping channel ${cleanC} (setting kept intact).`
+        );
+        continue;
+      }
+
+      if (i > 0) {
+        let staggerDelay = baseStagger;
+        if (i >= 8) staggerDelay = baseStagger * 2;
+        else if (i >= 4) staggerDelay = Math.round(baseStagger * 1.5);
+        logger.voice247(`[BootRecovery] Waiting ${staggerDelay / 1000}s before rejoining next channel...`);
+        await new Promise(resolve => setTimeout(resolve, staggerDelay));
+      }
+
+      const existing = remix.players.playerMap.get(channelId);
+      if (existing && !existing._destroyed) {
+        logger.voice247(`[BootRecovery] Channel ${channelId} already has a player — skipping.`);
+        continue;
+      }
+      if (remix.players._pendingJoins?.has?.(channelId)) {
+        logger.voice247(`[BootRecovery] Channel ${channelId} already has a pending join — skipping.`);
+        continue;
+      }
+
+      const { channel: channelObj, definitive } = await this._resolve247Channel(channelId);
+      if (!channelObj && definitive) {
+        logger.warn(
+            `[BootRecovery] Channel ${channelId} in guild ${guildId} no longer exists — ` +
+            `removing from 24/7 settings to prevent repeated failures.`
+        );
+        this._prune247Channel(guildId, channelId);
+        continue;
+      }
+      if (!channelObj && !definitive) {
+        logger.warn(
+            `[BootRecovery] Channel ${channelId} could not be resolved (cache miss + REST failure) — ` +
+            `keeping the 24/7 setting; the watchdog will retry later.`
+        );
+        continue;
+      }
+      const isVoice = channelObj.type === 2 || channelObj.type === 13 || channelObj.type === "voice";
+      if (!isVoice) {
+        logger.warn(
+            `[BootRecovery] Channel ${channelId} in guild ${guildId} is not a voice channel (type: ${channelObj.type}) — skipping.`
+        );
+        continue;
+      }
+
+      const guildHasActivePlayer = [...remix.players.playerMap.values()]
+          .some(p => !p._destroyed && cleanId(p._guildId ?? "") === guildId);
+      if (guildHasActivePlayer && i > 0) {
+        const extraDelay = 3_000;
+        logger.voice247(
+            `[BootRecovery] Guild ${guildId} already has an active player — ` +
+            `waiting extra ${extraDelay / 1000}s to avoid move-disconnect.`
+        );
+        await new Promise(resolve => setTimeout(resolve, extraDelay));
+      }
+
+      logger.voice247(
+          `[BootRecovery] Rejoining channel ${channelId} in guild ${guildId} (mode: ${mode}) [${i + 1}/${channelsToRejoin.length}]`
+      );
+
+      const player = await this._attemptRejoin(channelId, guildId, 3, 5_000, "BootRecovery");
+
+      if (player) {
+        this.rejoinBackoff?.recordSuccess?.(channelId);
+        logger.voice247(
+            `[BootRecovery] Successfully rejoined channel ${channelId} (mode: ${mode}) [${i + 1}/${channelsToRejoin.length}]`
+        );
+      } else {
+        this.rejoinBackoff?.recordFailure?.(channelId);
+        logger.warn(
+            `[BootRecovery] Could not rejoin channel ${channelId} in guild ${guildId} — ` +
+            `keeping 24/7 setting intact (backed off).`
+        );
+      }
+    }
+
+    logger.voice247(
+        `[BootRecovery] Boot recovery complete. ${channelsToRejoin.length} channel(s) processed.`
+    );
+  }
+}
+
+applyMixins(GatewayHandler, VoiceStateRouting, GuildSync, RejoinManager, Watchdog247);
+
+export { GatewayHandler };

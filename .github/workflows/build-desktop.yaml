@@ -12,7 +12,7 @@ on:
           - canary
         default: stable
       build_version:
-        description: Explicit Fluxer CalVer build version (YYYY.MDD.MICRO, UTC HHMMSS without leading zeroes) to use instead of automatic UTC clock allocation.
+        description: Explicit Orvix CalVer build version (YYYY.MDD.MICRO, UTC HHMMSS without leading zeroes) to use instead of automatic UTC clock allocation.
         required: false
         default: ""
         type: string
@@ -72,10 +72,10 @@ jobs:
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
-          repositories: fluxer
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
+          repositories: orvix
           permission-contents: read
       - name: Set metadata
         id: meta
@@ -195,25 +195,25 @@ jobs:
             ${{ runner.os }}-shared-renderer-cargo-registry-
 
       - name: Install dependencies
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step install_dependencies
 
       - name: Update version
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step update_version
 
       - name: Set build channel
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step set_build_channel
 
       - name: Build shared renderer assets
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step build_shared_assets
@@ -277,7 +277,7 @@ jobs:
       SOURCE_SHA: ${{ needs.meta.outputs.source_sha }}
       DESKTOP_PLATFORM: ${{ matrix.platform }}
       DESKTOP_ARCH: ${{ matrix.arch }}
-      FLUXER_MODULES: "1"
+      ORVIX_MODULES: "1"
       PLATFORM: ${{ matrix.platform }}
       ARCH: ${{ matrix.arch }}
       ELECTRON_ARCH: ${{ matrix.electron_arch }}
@@ -405,19 +405,19 @@ jobs:
           --step install_rust_windows_targets
 
       - name: Install dependencies
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step install_dependencies
 
       - name: Update version
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step update_version
 
       - name: Set build channel
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step set_build_channel
@@ -434,7 +434,7 @@ jobs:
           --step restore_shared_assets
 
       - name: Build Electron main process
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step build_electron_main
@@ -447,14 +447,14 @@ jobs:
 
       - name: Install Velopack CLI
         if: matrix.platform == 'windows'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step install_velopack_cli
 
       - name: Build Electron app (macOS)
         if: matrix.platform == 'macos'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         env:
           CSC_LINK: ${{ secrets.APPLE_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -467,14 +467,14 @@ jobs:
 
       - name: Verify macOS artifact (bundle ID + profile + signature)
         if: matrix.platform == 'macos'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step verify_bundle_id
 
       - name: Build Electron app (Windows)
         if: matrix.platform == 'windows'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         env:
           TEMP: C:\t
           TMP: C:\t
@@ -520,7 +520,7 @@ jobs:
       - name: Resolve unpacked Windows app directory
         id: resolve_unpacked
         if: matrix.platform == 'windows'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step resolve_windows_unpacked_dir
@@ -542,35 +542,35 @@ jobs:
 
       - name: Verify unpacked Windows signatures
         if: matrix.platform == 'windows'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step verify_windows_unpacked_signatures
 
       - name: Verify the packaged shell starts and boots its bundled renderer (Windows)
         if: matrix.platform == 'windows' && matrix.arch == 'x64'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step verify_bundled_renderer_windows
 
       - name: Create portable ZIP (Windows)
         if: matrix.platform == 'windows'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step create_portable_zip_windows
 
       - name: Package Windows app with Velopack
         if: matrix.platform == 'windows'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step package_app_windows_velopack
 
       - name: Analyze Velopack nupkg for long paths
         if: matrix.platform == 'windows'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         env:
           MAX_WINDOWS_PATH_LEN: 260
           PATH_HEADROOM: 10
@@ -580,11 +580,11 @@ jobs:
 
       - name: Download patched Electron distribution (Linux)
         if: matrix.platform == 'linux'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         env:
           GH_TOKEN: ${{ github.token }}
           ELECTRON_ARCH: ${{ matrix.arch }}
-          FLUXER_ELECTRON_DIST: ${{ runner.temp }}/fluxer-electron-dist
+          ORVIX_ELECTRON_DIST: ${{ runner.temp }}/orvix-electron-dist
         shell: bash
         run: |
           set -euo pipefail
@@ -592,29 +592,29 @@ jobs:
           version=$(jq -er .electronVersion electron/runtime.json)
           gh release download "$release_tag" --repo "$GITHUB_REPOSITORY" \
             --pattern "electron-v$version-linux-$ELECTRON_ARCH.zip" \
-            --pattern "electron-v$version-linux-$ELECTRON_ARCH.fluxer.json" \
-            --dir "$FLUXER_ELECTRON_DIST"
+            --pattern "electron-v$version-linux-$ELECTRON_ARCH.orvix.json" \
+            --dir "$ORVIX_ELECTRON_DIST"
 
       - name: Build Electron app (Linux)
         if: matrix.platform == 'linux'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         env:
           USE_SYSTEM_FPM: true
-          FLUXER_ELECTRON_DIST: ${{ runner.temp }}/fluxer-electron-dist
+          ORVIX_ELECTRON_DIST: ${{ runner.temp }}/orvix-electron-dist
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step build_app_linux
 
       - name: Verify the packaged shell boots its bundled renderer (Linux)
         if: matrix.platform == 'linux' && matrix.arch == 'x64'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step verify_bundled_renderer_linux
 
       - name: Verify signed Windows artifacts
         if: matrix.platform == 'windows'
-        working-directory: ${{ env.WORKDIR }}/fluxer_desktop
+        working-directory: ${{ env.WORKDIR }}/relay_desktop
         run: >-
           cargo run --locked --quiet --manifest-path ${{ github.workspace }}/_ci/tools/ci/Cargo.toml -- build-desktop
           --step verify_windows_signed_artifacts
@@ -688,7 +688,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ needs.meta.outputs.source_sha }}
-          sparse-checkout: fluxer_desktop/scripts
+          sparse-checkout: relay_desktop/scripts
 
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -699,7 +699,7 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           path: artifacts
-          pattern: fluxer-desktop-${{ needs.meta.outputs.build_channel }}-windows-arm64*
+          pattern: orvix-desktop-${{ needs.meta.outputs.build_channel }}-windows-arm64*
 
       - name: Verify the packaged shell starts and boots its bundled renderer
         shell: pwsh
@@ -709,9 +709,9 @@ jobs:
           if ($null -eq $zip) { Write-Host 'This build has no windows arm64 portable zip'; exit 0 }
           $app = Join-Path $env:RUNNER_TEMP 'app'
           Expand-Archive -Path $zip.FullName -DestinationPath $app
-          $exe = Get-ChildItem -Path $app -Recurse -Filter 'Fluxer*.exe' | Where-Object { $_.Name -notlike '*_ExecutionStub.exe' } | Select-Object -First 1
-          if ($null -eq $exe) { throw "$($zip.Name) holds no Fluxer executable" }
-          node fluxer_desktop/scripts/release-check.mjs --app $exe.DirectoryName --channel $env:BUILD_CHANNEL --expect-renderer $env:BUILD_VERSION --expect-source bundled --package-origin http://127.0.0.1:9 --app-arg=--disable-gpu --workdir (Join-Path $env:RUNNER_TEMP 'runs') --timeout-seconds 240
+          $exe = Get-ChildItem -Path $app -Recurse -Filter 'Orvix*.exe' | Where-Object { $_.Name -notlike '*_ExecutionStub.exe' } | Select-Object -First 1
+          if ($null -eq $exe) { throw "$($zip.Name) holds no Orvix executable" }
+          node relay_desktop/scripts/release-check.mjs --app $exe.DirectoryName --channel $env:BUILD_CHANNEL --expect-renderer $env:BUILD_VERSION --expect-source bundled --package-origin http://127.0.0.1:9 --app-arg=--disable-gpu --workdir (Join-Path $env:RUNNER_TEMP 'runs') --timeout-seconds 240
           if ($LASTEXITCODE -ne 0) { throw "The windows arm64 build fails its release check" }
 
   upload:
@@ -748,7 +748,7 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           path: artifacts
-          pattern: fluxer-desktop-${{ needs.meta.outputs.build_channel }}-*
+          pattern: orvix-desktop-${{ needs.meta.outputs.build_channel }}-*
 
       - name: Build payload layout (+ manifest.json)
         env:
@@ -767,10 +767,10 @@ jobs:
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
-          repositories: fluxer
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
+          repositories: orvix
           permission-contents: read
       - name: Check which shells run these modules
         env:
@@ -794,7 +794,7 @@ jobs:
       - name: Upload GitHub release assets
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fluxer-desktop-release-assets
+          name: orvix-desktop-release-assets
           path: release_assets
           if-no-files-found: error
           retention-days: 1
@@ -832,17 +832,17 @@ jobs:
       - name: Download GitHub release assets
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: fluxer-desktop-release-assets
+          name: orvix-desktop-release-assets
           path: release_assets
 
       - name: Create token
         id: create-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.FLUXER_CI_APP_ID }}
-          private-key: ${{ secrets.FLUXER_CI_APP_KEY }}
-          owner: fluxerapp
-          repositories: fluxer
+          client-id: ${{ vars.ORVIX_CI_APP_ID }}
+          private-key: ${{ secrets.ORVIX_CI_APP_KEY }}
+          owner: orvixapp
+          repositories: orvix
           permission-contents: write
       - name: Publish GitHub desktop release
         env:
@@ -853,7 +853,7 @@ jobs:
           set -euo pipefail
           release_args=(
             release publish
-            --component "fluxer-desktop-${BUILD_CHANNEL}"
+            --component "orvix-desktop-${BUILD_CHANNEL}"
             --build-version "${BUILD_VERSION}"
             --source-sha "${SOURCE_SHA}"
             --previous-sha "${RELEASE_BASELINE_SHA}"

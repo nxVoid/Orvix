@@ -5,16 +5,16 @@ on:
   pull_request:
     paths:
       - deploy/helm/**
-      - fluxer_rexctl/internal/stack/files/Caddyfile
-      - fluxer_rexctl/internal/stack/files/docker-compose.yml
+      - relay_rexctl/internal/stack/files/Caddyfile
+      - relay_rexctl/internal/stack/files/docker-compose.yml
       - deploy/generate-seaweedfs-init.py
       - .github/workflows/helm.yaml
   push:
     branches: [main]
     paths:
       - deploy/helm/**
-      - fluxer_rexctl/internal/stack/files/Caddyfile
-      - fluxer_rexctl/internal/stack/files/docker-compose.yml
+      - relay_rexctl/internal/stack/files/Caddyfile
+      - relay_rexctl/internal/stack/files/docker-compose.yml
       - deploy/generate-seaweedfs-init.py
       - .github/workflows/helm.yaml
 
@@ -39,12 +39,12 @@ jobs:
           - helm: v4.2.4
             sha256: c306b46f719b0a4da32d0f78ee21bf90ce8d602f15b22ab753f0674d1670a7f3
     env:
-      CHART: deploy/helm/fluxer
+      CHART: deploy/helm/relay
       KUBECONFORM_VERSION: v0.7.0
       KUBECONFORM_SHA256: c31518ddd122663b3f3aa874cfe8178cb0988de944f29c74a0b9260920d115d3
       CRD_CATALOG: https://raw.githubusercontent.com/datreeio/CRDs-catalog/63669a570e231d4f1f8396d229a1de512bcf0a34/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
     steps:
-      - name: Checkout fluxer
+      - name: Checkout orvix
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
@@ -52,9 +52,9 @@ jobs:
       - name: Generate the chart Caddyfile and check freshness
         run: |
           set -euo pipefail
-          cp fluxer_rexctl/internal/stack/files/Caddyfile "$CHART/files/Caddyfile"
+          cp relay_rexctl/internal/stack/files/Caddyfile "$CHART/files/Caddyfile"
           if ! git diff --exit-code -- "$CHART/files/Caddyfile"; then
-            echo "::error::Regenerate the chart Caddyfile with: cp fluxer_rexctl/internal/stack/files/Caddyfile deploy/helm/fluxer/files/Caddyfile"
+            echo "::error::Regenerate the chart Caddyfile with: cp relay_rexctl/internal/stack/files/Caddyfile deploy/helm/relay/files/Caddyfile"
             exit 1
           fi
 
@@ -62,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 deploy/generate-seaweedfs-init.py
-          if ! git diff --exit-code -- fluxer_rexctl/internal/stack/files/docker-compose.yml; then
+          if ! git diff --exit-code -- relay_rexctl/internal/stack/files/docker-compose.yml; then
             echo "::error::Regenerate the Compose initializer with: python3 deploy/generate-seaweedfs-init.py"
             exit 1
           fi
@@ -100,7 +100,7 @@ jobs:
           for values in "${files[@]}"; do
             echo "::group::$values"
             helm lint --strict "$CHART" -f "$values"
-            helm template fluxer "$CHART" -n fluxer -f "$values" \
+            helm template orvix "$CHART" -n orvix -f "$values" \
               --api-versions cert-manager.io/v1 --api-versions gateway.networking.k8s.io/v1 > rendered.yaml
             kubeconform -strict -summary -kubernetes-version 1.29.0 \
               -schema-location default -schema-location "$CRD_CATALOG" rendered.yaml
@@ -121,7 +121,7 @@ jobs:
           expect_failure() {
             local message=$1
             shift
-            if output=$(helm template fluxer "$CHART" "$@" 2>&1); then
+            if output=$(helm template orvix "$CHART" "$@" 2>&1); then
               echo "::error::rendered with $*"
               exit 1
             fi
@@ -132,18 +132,18 @@ jobs:
           }
           d=domain=chat.example.test
           expect_failure "domain must be set"
-          expect_failure "is a placeholder" --set $d --set secrets.values.FLUXER_SUDO_MODE_SECRET=CHANGE_ME
-          expect_failure "is a placeholder" --set $d --set-string 'secrets.extra.FLUXER_STRIPE_SECRET_KEY=<change-me>'
-          expect_failure "at least 32 characters" --set $d --set secrets.values.FLUXER_GATEWAY_RPC_AUTH_TOKEN=short
-          expect_failure "letters and digits only" --set $d --set-string 'secrets.values.FLUXER_VALKEY_PASSWORD=0123456789abcdef0123456789abcd:@'
+          expect_failure "is a placeholder" --set $d --set secrets.values.ORVIX_SUDO_MODE_SECRET=CHANGE_ME
+          expect_failure "is a placeholder" --set $d --set-string 'secrets.extra.ORVIX_STRIPE_SECRET_KEY=<change-me>'
+          expect_failure "at least 32 characters" --set $d --set secrets.values.ORVIX_GATEWAY_RPC_AUTH_TOKEN=short
+          expect_failure "letters and digits only" --set $d --set-string 'secrets.values.ORVIX_VALKEY_PASSWORD=0123456789abcdef0123456789abcd:@'
           expect_failure "worker.replicas must be 1" --set $d --set worker.replicas=2
-          expect_failure "at least 32 bytes" --set $d --set secrets.values.FLUXER_MEDIA_PROXY_UPLOAD_RELAY_SECRET_BASE64=c2hvcnQ=
-          expect_failure "DER RSA private key" --set $d --set secrets.values.FLUXER_ACTIVITYPUB_SIGNING_KEY_BASE64=c2hvcnQ=
+          expect_failure "at least 32 bytes" --set $d --set secrets.values.ORVIX_MEDIA_PROXY_UPLOAD_RELAY_SECRET_BASE64=c2hvcnQ=
+          expect_failure "DER RSA private key" --set $d --set secrets.values.ORVIX_ACTIVITYPUB_SIGNING_KEY_BASE64=c2hvcnQ=
           expect_failure "set postgres.external.host" --set $d --set postgres.enabled=false
-          expect_failure "set together" --set $d --set secrets.values.FLUXER_VAPID_PUBLIC_KEY=abc
-          expect_failure "is a secret and would be stored in plain text" --set $d --set env.FLUXER_EMAIL_SMTP_PASSWORD=not-a-real-password
-          expect_failure "is a secret and would be stored in plain text" --set $d --set api.env.FLUXER_STRIPE_SECRET_KEY=not-a-real-key
-          expect_failure "holds a password" --set $d --set-string 'env.FLUXER_SEARCH_URL=https://user:pass@search.example.test'
+          expect_failure "set together" --set $d --set secrets.values.ORVIX_VAPID_PUBLIC_KEY=abc
+          expect_failure "is a secret and would be stored in plain text" --set $d --set env.ORVIX_EMAIL_SMTP_PASSWORD=not-a-real-password
+          expect_failure "is a secret and would be stored in plain text" --set $d --set api.env.ORVIX_STRIPE_SECRET_KEY=not-a-real-key
+          expect_failure "holds a password" --set $d --set-string 'env.ORVIX_SEARCH_URL=https://user:pass@search.example.test'
           expect_failure "Set livekit.nodeCIDRs" --set $d --set networkPolicy.ingressNamespaceSelector.matchLabels.name=ingress
           expect_failure "set livekit.external.publicUrl" --set $d --set livekit.enabled=false --set livekit.external.url=http://livekit.voice.svc:7880
           expect_failure "reserve a public address" --set $d --set livekit.expose=loadBalancer
@@ -152,7 +152,7 @@ jobs:
       - name: Check that joined voice keeps voice on without LiveKit
         run: |
           set -euo pipefail
-          helm template fluxer "$CHART" -n fluxer -f "$CHART/ci/joined-voice-values.yaml" > rendered.yaml
+          helm template orvix "$CHART" -n orvix -f "$CHART/ci/joined-voice-values.yaml" > rendered.yaml
           python3 - rendered.yaml <<'PY'
           import sys, yaml
           docs = [d for d in yaml.safe_load_all(open(sys.argv[1])) if d]
@@ -163,11 +163,11 @@ jobs:
           for d in docs:
               if d.get('kind') == 'ConfigMap':
                   config.update(d.get('data') or {})
-          want = {'FLUXER_LIVEKIT_ENABLED': 'true', 'FLUXER_LIVEKIT_BUNDLED': 'false'}
+          want = {'ORVIX_LIVEKIT_ENABLED': 'true', 'ORVIX_LIVEKIT_BUNDLED': 'false'}
           for key, value in want.items():
               if config.get(key) != value:
                   sys.exit(f'{key} is {config.get(key)!r}, want {value!r}')
-          if 'FLUXER_LIVEKIT_INTERNAL_URL' in config or 'FLUXER_LIVEKIT_DEFAULT_REGION' not in config:
+          if 'ORVIX_LIVEKIT_INTERNAL_URL' in config or 'ORVIX_LIVEKIT_DEFAULT_REGION' not in config:
               sys.exit('joined voice sets the internal URL or leaves out the default region')
           print('joined voice keeps voice on with no LiveKit workload')
           PY
@@ -177,8 +177,8 @@ jobs:
           set -euo pipefail
           cp -R "$CHART" "$RUNNER_TEMP/bumped"
           sed -e 's/^version: .*/version: 99.0.0/' -e 's/^appVersion: .*/appVersion: "bumped"/' "$CHART/Chart.yaml" > "$RUNNER_TEMP/bumped/Chart.yaml"
-          helm template fluxer "$CHART" -n fluxer -f "$CHART/ci/existing-secret-values.yaml" > before.yaml
-          helm template fluxer "$RUNNER_TEMP/bumped" -n fluxer -f "$CHART/ci/existing-secret-values.yaml" > after.yaml
+          helm template orvix "$CHART" -n orvix -f "$CHART/ci/existing-secret-values.yaml" > before.yaml
+          helm template orvix "$RUNNER_TEMP/bumped" -n orvix -f "$CHART/ci/existing-secret-values.yaml" > after.yaml
           python3 - before.yaml after.yaml <<'PY'
           import sys, yaml
           def pods(path):
@@ -200,7 +200,7 @@ jobs:
       - name: Check the default resource requests
         run: |
           set -euo pipefail
-          helm template fluxer "$CHART" -n fluxer -f "$CHART/ci/default-values.yaml" > rendered.yaml
+          helm template orvix "$CHART" -n orvix -f "$CHART/ci/default-values.yaml" > rendered.yaml
           python3 - rendered.yaml <<'PY'
           import sys, yaml
           def cpu(v):

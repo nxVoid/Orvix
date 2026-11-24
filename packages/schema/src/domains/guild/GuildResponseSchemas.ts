@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {GuildSplashCardAlignmentValue} from '@fluxer/constants/src/GuildConstants';
+import type {GuildSplashCardAlignmentValue} from '@relay/constants/src/GuildConstants';
 import {
 	GuildFeatures,
 	GuildOperations,
 	GuildOperationsDescriptions,
 	SystemChannelFlags,
 	SystemChannelFlagsDescriptions,
-} from '@fluxer/constants/src/GuildConstants';
-import {CustomBadgeIdListResponse} from '@fluxer/schema/src/domains/admin/AdminBadgeSchemas';
-import {ChannelResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
-import {GuildEmojiResponse, GuildStickerResponse} from '@fluxer/schema/src/domains/guild/GuildEmojiSchemas';
-import {GuildRoleResponse} from '@fluxer/schema/src/domains/guild/GuildRoleSchemas';
+} from '@relay/constants/src/GuildConstants';
+import {CustomBadgeIdListResponse} from '@relay/schema/src/domains/admin/AdminBadgeSchemas';
+import {ChannelResponse} from '@relay/schema/src/domains/channel/ChannelSchemas';
+import {GuildEmojiResponse, GuildStickerResponse} from '@relay/schema/src/domains/guild/GuildEmojiSchemas';
+import {GuildRoleResponse} from '@relay/schema/src/domains/guild/GuildRoleSchemas';
 import {
 	ContentWarningLevelSchema,
 	DefaultMessageNotificationsSchema,
@@ -20,8 +20,8 @@ import {
 	GuildVerificationLevelSchema,
 	NSFWLevelSchema,
 	SplashCardAlignmentSchema,
-} from '@fluxer/schema/src/primitives/GuildValidators';
-import {PermissionStringType} from '@fluxer/schema/src/primitives/PermissionValidators';
+} from '@relay/schema/src/primitives/GuildValidators';
+import {PermissionStringType} from '@relay/schema/src/primitives/PermissionValidators';
 import {
 	coerceNumberFromString,
 	createBitflagInt32Type,
@@ -30,8 +30,8 @@ import {
 	SnowflakeStringType,
 	withFieldDescription,
 	withOpenApiType,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {withSchemaMetadata} from '@fluxer/schema/src/SchemaMetadata';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {withSchemaMetadata} from '@relay/schema/src/SchemaMetadata';
 import {z} from 'zod';
 
 function normalizeGuildFeatures(features: Array<string>): Array<string> {

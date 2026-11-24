@@ -1,0 +1,9 @@
+# Voice provider boundary
+
+`SpatialVoiceAdapter.ts` exposes only participant IDs, speaking state, current existing connection status, read-only `MediaStreamTrack` references for subscribed shared screens, spatial presentation updates and deterministic subscription/disposal. Scene components never import LiveKit. A future provider supplies this boundary and maps existing voice state to it; no imaginary QUIC protocol is implemented.
+
+`LiveKitSpatialVoiceAdapter.ts` receives the existing room and accessors from `MediaEngineFacade`; it never constructs a Room, connects/disconnects, captures microphone/screen, changes publish state or subscribes to a publication. It observes ten existing room events and releases exactly its own listeners. A replaced provider room creates a fresh observation adapter after the normal voice engine reconnects.
+
+Audio ownership stays in the existing LiveKit WebAudio playback path. The current fork's `RemoteAudioTrack.setWebAudioPlugins` inserts a distance GainNode and StereoPannerNode before its existing volume gain. Repository search found no competing plugin owner. No `attach`, duplicated HTML audio element, MediaStreamAudioSource or second destination path is created by this feature. Normal ParticipantVolume composition, connection volume, output volume and effective mute/deafen subscription state remain authoritative. Screen-share audio is never processed. Voice-only participants keep ordinary playback.
+
+Dispose/disable restores an empty plugin list, disconnects owned nodes and retains the existing media session/context. Tests cover no connect/disconnect/capture/attach/stop/volume calls, bounded plugin ownership and listener cleanup. Listening tests with real devices, deafen, per-user gain and provider reconnect are explicitly still required before production rollout.

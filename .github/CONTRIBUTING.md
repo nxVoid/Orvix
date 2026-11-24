@@ -1,4 +1,4 @@
-# Contributing to Fluxer
+# Contributing to Orvix
 
 This policy applies to all commits and pull requests.
 
@@ -36,7 +36,7 @@ Every commit made by a contributor must include:
 - A Developer Certificate of Origin sign-off.
 - A cryptographic signature that GitHub marks as verified.
 
-Pull requests opened by Fluxer repository automation are exempt from these commit requirements.
+Pull requests opened by Orvix repository automation are exempt from these commit requirements.
 
 Read the [Developer Certificate of Origin 1.1](https://developercertificate.org) before contributing. Add a `Signed-off-by` trailer by creating the commit with `git commit -s`. The name and email address in the trailer must match those of the commit author or committer.
 
@@ -101,4 +101,4 @@ Submit translations through [Weblate](https://weblate.fluxer.tools), not through
 
 All repository activity is governed by the [Code of Conduct](https://github.com/fluxerapp/fluxer/blob/main/.github/CODE_OF_CONDUCT.md).
 
-Fluxer is distributed under the [GNU Affero General Public License, version 3.0 or later](https://github.com/fluxerapp/fluxer/blob/main/LICENSE). By adding a DCO sign-off, you certify that you have the right to submit the contribution under that licence.
+Orvix is distributed under the [GNU Affero General Public License, version 3.0 or later](https://github.com/fluxerapp/fluxer/blob/main/LICENSE). By adding a DCO sign-off, you certify that you have the right to submit the contribution under that licence.

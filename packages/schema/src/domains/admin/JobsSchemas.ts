@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import {CalendarDateType, IsoTimestampStringType} from '@fluxer/schema/src/primitives/DateValidators';
-import {createQueryIntegerType} from '@fluxer/schema/src/primitives/QueryValidators';
-import {createStringType, SnowflakeStringType, SnowflakeType} from '@fluxer/schema/src/primitives/SchemaPrimitives';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
+import {CalendarDateType, IsoTimestampStringType} from '@relay/schema/src/primitives/DateValidators';
+import {createQueryIntegerType} from '@relay/schema/src/primitives/QueryValidators';
+import {createStringType, SnowflakeStringType, SnowflakeType} from '@relay/schema/src/primitives/SchemaPrimitives';
 import {z} from 'zod';
 
 const JobStatusEnum = z.enum(['queued', 'running', 'succeeded', 'cancelled', 'deadletter']);

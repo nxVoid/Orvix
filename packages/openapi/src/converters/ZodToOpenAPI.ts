@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import {isDeepStrictEqual} from 'node:util';
-import {createOpenAPIComponentRef, validateOpenAPIComponentName} from '@fluxer/openapi/src/OpenAPIComponentRef';
-import type {OpenAPISchemaTarget} from '@fluxer/openapi/src/OpenAPIGenerationTypes';
-import {visitOpenAPISchemaObjects} from '@fluxer/openapi/src/OpenAPISchemaVisitor';
-import type {OpenAPIDocument, OpenAPIRef, OpenAPISchema} from '@fluxer/openapi/src/OpenAPITypes';
-import {schemaMetadata} from '@fluxer/schema/src/SchemaMetadata';
+import {createOpenAPIComponentRef, validateOpenAPIComponentName} from '@relay/openapi/src/OpenAPIComponentRef';
+import type {OpenAPISchemaTarget} from '@relay/openapi/src/OpenAPIGenerationTypes';
+import {visitOpenAPISchemaObjects} from '@relay/openapi/src/OpenAPISchemaVisitor';
+import type {OpenAPIDocument, OpenAPIRef, OpenAPISchema} from '@relay/openapi/src/OpenAPITypes';
+import {schemaMetadata} from '@relay/schema/src/SchemaMetadata';
 import {core, z} from 'zod';
 
 export type SchemaIO = 'input' | 'output';
@@ -36,7 +36,7 @@ function applyMetadata(schema: core.$ZodType, json: OpenAPISchema): void {
 	if (!metadata) return;
 	if (metadata.format) json.format = metadata.format;
 	if (metadata.bitflagValues) json['x-bitflagValues'] = metadata.bitflagValues;
-	if (metadata.experiment) json['x-fluxer-experiment'] = metadata.experiment;
+	if (metadata.experiment) json['x-orvix-experiment'] = metadata.experiment;
 	const entries = metadata.enumEntries;
 	if (!entries) return;
 	json['x-enumNames'] = entries.map((entry) => entry.name);

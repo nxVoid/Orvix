@@ -1,0 +1,6 @@
+Continue the existing rebrand, preserving the current working tree.
+1. Snapshot every changed source file into a new timestamped recovery directory; never reuse prior snapshots.
+2. Rename first-party service directories, @orvix package scope, Rust/Erlang modules, TypeScript symbols and matching paths to Relay.
+3. Keep protocol/schema namespaces, persisted keys, environment variables, infrastructure project/volume names, installed bundle/package IDs and existing profile paths compatible. Introduce Relay portable controls while honoring old controls.
+4. Reuse the existing Relay artwork and update its source/asset references. Document identity exceptions and local execution.
+5. Sequential bounded source/path audit, TypeScript checks, API tests, Rust branding tests, desktop checks, and formatting. Record exit codes; report incomplete checks truthfully.

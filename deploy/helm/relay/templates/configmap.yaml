@@ -1,0 +1,20 @@
+{{- include "orvix.validate" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orvix-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "orvix.labels" (dict "root" . "name" "orvix-config" "component" "config") | nindent 4 }}
+data:
+  {{- include "orvix.configData" . | nindent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: relay-app-proxy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "orvix.labels" (dict "root" . "name" "relay-app-proxy" "component" "config") | nindent 4 }}
+data:
+  {{- include "fluxer.appProxyConfigData" . | nindent 2 }}

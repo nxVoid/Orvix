@@ -11,11 +11,11 @@ import {
 	isValidDiscoveryLanguage,
 	isValidDiscoveryTag,
 	normalizeDiscoveryTag,
-} from '@fluxer/constants/src/DiscoveryConstants';
-import {CustomBadgeIdListResponse} from '@fluxer/schema/src/domains/admin/AdminBadgeSchemas';
-import {NSFWLevelSchema} from '@fluxer/schema/src/primitives/GuildValidators';
-import {SnowflakeStringType, SnowflakeType, withOpenApiType} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {withSchemaMetadata} from '@fluxer/schema/src/SchemaMetadata';
+} from '@relay/constants/src/DiscoveryConstants';
+import {CustomBadgeIdListResponse} from '@relay/schema/src/domains/admin/AdminBadgeSchemas';
+import {NSFWLevelSchema} from '@relay/schema/src/primitives/GuildValidators';
+import {SnowflakeStringType, SnowflakeType, withOpenApiType} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {withSchemaMetadata} from '@relay/schema/src/SchemaMetadata';
 import {z} from 'zod';
 
 const DISCOVERY_CATEGORY_MAX = Math.max(...Object.values(DiscoveryCategories));

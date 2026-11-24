@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import {APIErrorCodes} from '@fluxer/constants/src/ApiErrorCodes';
-import {ValidationErrorCodes} from '@fluxer/constants/src/ValidationErrorCodes';
-import type {ValueOf} from '@fluxer/constants/src/ValueOf';
+import {APIErrorCodes} from '@relay/constants/src/ApiErrorCodes';
+import {ValidationErrorCodes} from '@relay/constants/src/ValidationErrorCodes';
+import type {ValueOf} from '@relay/constants/src/ValueOf';
 
 export const AccountTiers = {
 	UNCLAIMED: 'unclaimed',

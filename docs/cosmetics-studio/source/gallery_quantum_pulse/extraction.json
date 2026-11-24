@@ -1,0 +1,17 @@
+{
+  "reference": "docs/references/spark/Relay Avatar Frame Collection-2.svg",
+  "crop": [
+    353,
+    297,
+    334,
+    334
+  ],
+  "mask": {
+    "center": 167,
+    "outer": [
+      162,
+      164
+    ],
+    "inner": 119
+  }
+}

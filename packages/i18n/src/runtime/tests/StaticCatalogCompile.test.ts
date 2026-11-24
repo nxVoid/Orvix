@@ -3,15 +3,15 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {extractMessageTemplateVariables} from '@fluxer/i18n/src/runtime/MessageCatalogTypes';
 import MessageFormat from '@messageformat/core';
+import {extractMessageTemplateVariables} from '@relay/i18n/src/runtime/MessageCatalogTypes';
 import {describe, expect, it} from 'vitest';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../..');
 
 const CATALOG_DIRS = {
-	content: 'fluxer_api/src/api/content_i18n/weblate',
-	email: 'fluxer_api/pkgs/email/src/email_i18n/weblate',
+	content: 'relay_api/src/api/content_i18n/weblate',
+	email: 'relay_api/pkgs/email/src/email_i18n/weblate',
 	errors: 'packages/errors/src/i18n/weblate',
 } as const;
 

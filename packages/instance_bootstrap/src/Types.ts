@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type {LimitConfigSnapshot, LimitConfigWireFormat} from '@fluxer/limits/src/LimitTypes';
-import type {DomainMigrationDiscoveryResponse} from '@fluxer/schema/src/domains/admin/DomainMigrationSchemas';
+import type {LimitConfigSnapshot, LimitConfigWireFormat} from '@relay/limits/src/LimitTypes';
+import type {DomainMigrationDiscoveryResponse} from '@relay/schema/src/domains/admin/DomainMigrationSchemas';
 import type {
 	GeoEntry,
 	GeolocationResponse as GeolocationWireResponse,
-} from '@fluxer/schema/src/domains/geolocation/GeolocationSchemas';
+} from '@relay/schema/src/domains/geolocation/GeolocationSchemas';
 import type {
 	InstanceAgePolicyAction,
 	InstanceAppPublic,
 	InstancePushDeliveryMode,
 	InstanceRegistration,
-	WellKnownFluxerResponse,
-} from '@fluxer/schema/src/domains/instance/InstanceSchemas';
+	WellKnownRelayResponse,
+} from '@relay/schema/src/domains/instance/InstanceSchemas';
 
-export type {GeoEntry} from '@fluxer/schema/src/domains/geolocation/GeolocationSchemas';
+export type {GeoEntry} from '@relay/schema/src/domains/geolocation/GeolocationSchemas';
 export type {
 	InstanceAgePolicy,
 	InstanceAgePolicyGeo,
@@ -34,7 +34,7 @@ export type {
 	InstanceServices,
 	InstanceSetup,
 	InstanceSso,
-} from '@fluxer/schema/src/domains/instance/InstanceSchemas';
+} from '@relay/schema/src/domains/instance/InstanceSchemas';
 
 export type InstanceLegal = InstanceAppPublic['legal'];
 export type InstanceDomainMigration = DomainMigrationDiscoveryResponse;
@@ -57,7 +57,7 @@ export const AGE_POLICY_ACTIONS = Object.freeze([
 	'block',
 ] as const) satisfies ReadonlyArray<InstanceAgePolicyAction>;
 
-export interface InstanceDiscoveryResponse extends Omit<WellKnownFluxerResponse, 'limits'> {
+export interface InstanceDiscoveryResponse extends Omit<WellKnownRelayResponse, 'limits'> {
 	limits: LimitConfigSnapshot | LimitConfigWireFormat;
 }
 

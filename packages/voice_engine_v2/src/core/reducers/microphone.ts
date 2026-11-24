@@ -8,21 +8,21 @@ import {
 	isConnected,
 	markOperation,
 	unsupportedCapability,
-} from '@fluxer/voice_engine_v2/src/core/reducers/_helpers';
-import {applyMediaFailure, completeUnpublish} from '@fluxer/voice_engine_v2/src/core/reducers/_media';
-import type {VoiceEngineV2Snapshot, VoiceEngineV2Transition} from '@fluxer/voice_engine_v2/src/core/state';
+} from '@relay/voice_engine_v2/src/core/reducers/_helpers';
+import {applyMediaFailure, completeUnpublish} from '@relay/voice_engine_v2/src/core/reducers/_media';
+import type {VoiceEngineV2Snapshot, VoiceEngineV2Transition} from '@relay/voice_engine_v2/src/core/state';
 import {
 	getVoiceEngineV2MicrophoneOperationFailureAction,
 	type VoiceEngineV2MicrophoneOperationFailureAction,
-} from '@fluxer/voice_engine_v2/src/policies/microphoneFailureAction';
-import type {VoiceEngineV2Event} from '@fluxer/voice_engine_v2/src/protocol/events';
+} from '@relay/voice_engine_v2/src/policies/microphoneFailureAction';
+import type {VoiceEngineV2Event} from '@relay/voice_engine_v2/src/protocol/events';
 import type {
 	VoiceEngineV2AudioControls,
 	VoiceEngineV2Error,
 	VoiceEngineV2MicrophoneOptions,
 	VoiceEngineV2OperationId,
 	VoiceEngineV2PermissionResult,
-} from '@fluxer/voice_engine_v2/src/protocol/types';
+} from '@relay/voice_engine_v2/src/protocol/types';
 
 type VoiceEngineV2MicrophoneEvent = Extract<
 	VoiceEngineV2Event,

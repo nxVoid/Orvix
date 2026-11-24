@@ -15,25 +15,25 @@ import {
 	THREAD_SEARCH_MAX_TAGS,
 	THREAD_SEARCH_MIN_LIMIT,
 	THREAD_SEARCH_NAME_MAX_LENGTH,
-} from '@fluxer/constants/src/ThreadConstants';
-import {ThreadChannelResponse} from '@fluxer/schema/src/domains/channel/ChannelSchemas';
+} from '@relay/constants/src/ThreadConstants';
+import {ThreadChannelResponse} from '@relay/schema/src/domains/channel/ChannelSchemas';
 import {
 	StartThreadRequest,
 	ThreadAutoArchiveDurationSchema,
-} from '@fluxer/schema/src/domains/channel/ThreadRequestSchemas';
-import {ThreadMemberResponse} from '@fluxer/schema/src/domains/channel/ThreadSchemas';
-import {GuildMemberResponse} from '@fluxer/schema/src/domains/guild/GuildMemberSchemas';
-import {MessageRequestSchema} from '@fluxer/schema/src/domains/message/MessageRequestSchemas';
-import {MessageResponseSchema} from '@fluxer/schema/src/domains/message/MessageResponseSchemas';
-import {createQueryIntegerType} from '@fluxer/schema/src/primitives/QueryValidators';
+} from '@relay/schema/src/domains/channel/ThreadRequestSchemas';
+import {ThreadMemberResponse} from '@relay/schema/src/domains/channel/ThreadSchemas';
+import {GuildMemberResponse} from '@relay/schema/src/domains/guild/GuildMemberSchemas';
+import {MessageRequestSchema} from '@relay/schema/src/domains/message/MessageRequestSchemas';
+import {MessageResponseSchema} from '@relay/schema/src/domains/message/MessageResponseSchemas';
+import {createQueryIntegerType} from '@relay/schema/src/primitives/QueryValidators';
 import {
 	createInt32EnumType,
 	createStringType,
 	Int32Type,
 	SnowflakeStringType,
 	SnowflakeType,
-} from '@fluxer/schema/src/primitives/SchemaPrimitives';
-import {withSchemaMetadata} from '@fluxer/schema/src/SchemaMetadata';
+} from '@relay/schema/src/primitives/SchemaPrimitives';
+import {withSchemaMetadata} from '@relay/schema/src/SchemaMetadata';
 import {z} from 'zod';
 
 const EXPERIMENT = {experiment: 'channel_threads'} as const;

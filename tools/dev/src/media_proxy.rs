@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use crate::object_store::{ensure_s3_buckets, wait_s3_api};
+use crate::object_store::{ensure_s3_buckets, s3_buckets, s3_env, wait_s3_api};
 use crate::paths::{
     DEV_LOG_DIR, DEV_SEAWEEDFS_DIR, DEV_SEAWEEDFS_PID_FILE, ensure_writable_dev_paths, which,
 };
@@ -10,10 +10,6 @@ use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
-const DEV_S3_BUCKETS: &str =
-    "fluxer,fluxer-uploads,fluxer-downloads,fluxer-reports,fluxer-harvests,fluxer-static";
-const DEV_S3_ACCESS_KEY_ID: &str = "fluxer";
-const DEV_S3_SECRET_ACCESS_KEY: &str = "fluxer-secret";
 const DEV_S3_HOST: &str = "127.0.0.1";
 const DEV_S3_PORT: u16 = 8333;
 const DEV_SEAWEEDFS_STOP_TIMEOUT: Duration = Duration::from_secs(15);
@@ -31,7 +27,7 @@ pub async fn run_dev_media_doctor(
     if let Some(path) = media_path {
         check_dev_media_path(base_url, path).await?;
     }
-    println!("Fluxer media proxy doctor passed.");
+    println!("Orvix media proxy doctor passed.");
     Ok(())
 }
 
@@ -55,7 +51,7 @@ pub async fn ensure_dev_object_store(repair: bool, repair_timeout_secs: u64) -> 
         }
         Err(error) => {
             bail!(
-                "SeaweedFS S3 is unreachable: {error}\nRun `fluxer-dev media-proxy doctor --repair` to start the local dev object store."
+                "SeaweedFS S3 is unreachable: {error}\nRun `relay-dev media-proxy doctor --repair` to start the local dev object store."
             );
         }
     }
@@ -114,9 +110,12 @@ fn start_dev_seaweedfs() -> Result<()> {
             "-s3.port.iceberg=0",
             "-webdav=false",
         ])
-        .env("AWS_ACCESS_KEY_ID", DEV_S3_ACCESS_KEY_ID)
-        .env("AWS_SECRET_ACCESS_KEY", DEV_S3_SECRET_ACCESS_KEY)
-        .env("S3_BUCKET", DEV_S3_BUCKETS)
+        .envs(
+            s3_env()
+                .into_iter()
+                .filter_map(|(key, value)| value.map(|value| (key, value))),
+        )
+        .env("S3_BUCKET", s3_buckets().join(","))
         .stdin(Stdio::null())
         .stdout(Stdio::from(log))
         .stderr(Stdio::from(stderr))
